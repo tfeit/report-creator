@@ -1,39 +1,3 @@
-export const REPORTTYPES = [
-  {
-    id: "organisations",
-    label: "Organisationen",
-    description:
-      "Erstellt einen Bericht zu Organisationen, deren Eigenschaften, wie z.B. Kategorien und Schlagwörter."
-  },
-  {
-    id: "organisations_statistics",
-    label: "Organisationen & Statistik",
-    description: "Erstellt einen Bericht zu Organisationen und deren statistischen Daten."
-  },
-  {
-    id: "organisations_offers",
-    label: "Organisationen & Angebote",
-    description:
-      "Erstellt einen Bericht zu den Organisationen ihren Eigenschaften und deren Angebote und Eigenschaften."
-  },
-  {
-    id: "organisations_offers_statistics",
-    label: "Organisationen & Angebote & Wirkung",
-    description:
-      "Erstellt einen Bericht zu den Organisationen, ihren Angebote und der Reichweite dieser Angebote."
-  },
-  {
-    id: "schools",
-    label: "Schulen",
-    description: "Erstelle einen Bericht zu Schulen, deren Eigenschaften sowie statistischen Daten."
-  },
-  {
-    id: "schools_statistics_offers",
-    label: "Schulen & Nutzung von Bildungsangeboten",
-    description: "Erstelle einen Bericht zu Schulen und deren Nutzung von Bildungsangeboten."
-  }
-];
-
 export const ORGANSIATIONFIELDS = [
   { value: "name", label: "Name", dataType: "string" },
   { value: "rechtsform", label: "Rechtsform", dataType: "string" },

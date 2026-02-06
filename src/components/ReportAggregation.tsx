@@ -134,74 +134,85 @@ export default function ReportAggregation() {
           <div className="setting-dropdown">
             <div className="p-3 flex flex-col gap-4">
               {groupedFields.length > 0 && (
-                <div className="flex flex-col gap-2">
-                  {groupedFields.map((field, index) => {
-                    const fieldValue = getFieldKey(field);
-                    return (
-                      <div
-                        key={fieldValue}
-                        className="flex items-center justify-between p-2 rounded"
-                      >
-                        <span className="flex-1 text-sm text-gray-700 dark:text-gray-200">
-                          {fieldLabelMap.get(fieldValue) ?? fieldValue}
-                        </span>
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => handleMoveGrouping(fieldValue, "up")}
-                            disabled={index === 0}
-                            className="p-1 rounded hover:bg-blue-200 dark:hover:bg-blue-800/50 disabled:opacity-50"
-                          >
-                            <ChevronUpIcon className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleMoveGrouping(fieldValue, "down")}
-                            disabled={index === groupedFields.length - 1}
-                            className="p-1 rounded hover:bg-blue-200 dark:hover:bg-blue-800/50 disabled:opacity-50"
-                          >
-                            <ChevronDownIcon className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveGrouping(fieldValue)}
-                            className="p-1 rounded text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/30"
-                          >
-                            <TrashIcon className="w-4 h-4" />
-                          </button>
+                <>
+                  <div className="flex flex-col gap-2">
+                    {groupedFields.map((field, index) => {
+                      const fieldValue = getFieldKey(field);
+                      return (
+                        <div
+                          key={fieldValue}
+                          className="flex items-center justify-between p-2 rounded"
+                        >
+                          <span className="flex-1 text-sm text-gray-700 dark:text-gray-200">
+                            {fieldLabelMap.get(fieldValue) ?? fieldValue}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleMoveGrouping(fieldValue, "up")}
+                              disabled={index === 0}
+                              className="p-1 rounded hover:bg-blue-200 dark:hover:bg-blue-800/50 disabled:opacity-50"
+                            >
+                              <ChevronUpIcon className="w-4 h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleMoveGrouping(fieldValue, "down")}
+                              disabled={index === groupedFields.length - 1}
+                              className="p-1 rounded hover:bg-blue-200 dark:hover:bg-blue-800/50 disabled:opacity-50"
+                            >
+                              <ChevronDownIcon className="w-4 h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveGrouping(fieldValue)}
+                              className="p-1 rounded text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/30"
+                            >
+                              <TrashIcon className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                  <hr className="border-gray-200 dark:border-gray-600" />
+                </>
               )}
 
               <div className="flex flex-col gap-2">
-                <select
-                  value=""
-                  onChange={event => handleAddGrouping(event.target.value)}
-                >
-                  <option value="" disabled>
-                    Gruppierung hinzufügen
-                  </option>
-                  {addableFields.map(field => (
-                    <option key={field.value} value={field.value}>
+                {addableFields.map(field => {
+                  const isSelected = groupedKeys.has(field.value);
+                  return (
+                    <button
+                      key={field.value}
+                      type="button"
+                      onClick={() => handleAddGrouping(field.value)}
+                      disabled={isSelected}
+                      className={`w-full text-left rounded-lg px-3 py-2 text-sm ${
+                        isSelected
+                          ? "text-gray-400 dark:text-gray-500 cursor-not-allowed"
+                          : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/80"
+                      }`}
+                    >
                       {field.label}
-                    </option>
-                  ))}
-                </select>
+                    </button>
+                  );
+                })}
+              </div>
 
                 {groupedFields.length > 0 && (
+                  <>
+                  <hr className="border-gray-200 dark:border-gray-600" />
                   <button
                     type="button"
                     onClick={handleClearGrouping}
-                    className="flex items-center gap-2 rounded-full text-gray-600 dark:text-gray-200 py-1.5 text-sm font-medium hover:bg-white/10"
+                    className="flex items-center gap-2 rounded-full text-gray-600 dark:text-gray-200 py-1.5 px-3 text-sm font-medium hover:bg-red-800/10 dark:hover:bg-red-500/50"
                   >
                     <TrashIcon className="w-4 h-4" />
                     Gruppierung löschen
                   </button>
+                  </>
                 )}
-              </div>
             </div>
           </div>
         )}

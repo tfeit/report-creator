@@ -138,6 +138,7 @@ export default function FieldSelector({
 
   return (
     <div id="field-selector">
+      <label className="text-sm font-medium mb-2" htmlFor="selectedFields">{config.title}</label>
       <select
         name="selectedFields"
         value={""}
