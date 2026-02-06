@@ -45,7 +45,7 @@ export default function PopupChangeData({ setShowPopup }: { setShowPopup: (show:
     onChange: (event: React.ChangeEvent<HTMLSelectElement>) => void,
     options: { value: string; label: string }[]
   ) => (
-    <select className="w-full bg-transparent border border-gray-200 dark:border-gray-500 rounded-md px-2 py-1.5 h-8 outline-none text-sm"
+    <select
     name={name} value={value} onChange={onChange}>
       <option value="">Auswählen</option>
       {options.map(option => (

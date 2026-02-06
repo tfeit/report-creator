@@ -62,7 +62,6 @@ export default function ChartType() {
           name="chart"
           value={chart}
           onChange={handleChartChange}
-          className="w-full bg-transparent border border-gray-200 dark:border-gray-500 rounded-md px-2 py-1.5 h-7 outline-none text-sm"
         >
           <option value="">Auswählen</option>
           <option value="bar">Balkendiagramm</option>
@@ -77,7 +76,6 @@ export default function ChartType() {
           name="aggregation"
           value={aggregation}
           onChange={handleAggregationChange}
-          className="w-full bg-transparent border border-gray-200 dark:border-gray-500 rounded-md px-2 py-1.5 h-7 outline-none text-sm"
         >
           <option value="dataset">Datensatz</option>
           {numberFields.map((field: any) => (

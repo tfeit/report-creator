@@ -66,7 +66,7 @@ export default function FilterGroupDropdowns({
                 icon={activeDropdown === filterKey ? ChevronUpIcon : ChevronDownIcon}
               />
               {activeDropdown === filterKey && (
-                <div className="absolute left-0 mt-2 w-80 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 shadow-lg z-50">
+                <div className="setting-dropdown">
                   <div className="p-3 flex flex-col gap-4">
                     <div className="flex justify-between items-center gap-2 w-full">
                       <div className="flex items-center gap-2 shrink-0">
@@ -83,7 +83,6 @@ export default function FilterGroupDropdowns({
                         <select
                           name={`filter_${groupIndex}_${filterIndex}_operator`}
                           value={filter.operator}
-                          className="w-full h-8 text-sm border border-gray-200 dark:border-gray-500 rounded-md bg-transparent"
                           onChange={e =>
                             onUpdateFilterOperator(groupIndex, filterIndex, e.target.value)
                           }

@@ -179,7 +179,7 @@ export default function ReportSort() {
         />
 
         {activeDropdown && (
-          <div className="absolute left-0 mt-2 w-[28rem] rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 shadow-lg z-50">
+          <div className="setting-dropdown">
             <div className="p-3 flex flex-col gap-3">
               {sortRules.map(rule => {
                 const disabledValues = new Set(
@@ -194,7 +194,6 @@ export default function ReportSort() {
                       onChange={event =>
                         handleUpdateField(rule.fieldValue, event.target.value)
                       }
-                      className="w-full rounded-lg border border-gray-200 dark:border-gray-500 bg-transparent text-sm px-3 py-2 max-w-60 h-7"
                     >
                       {availableFields.map(field => (
                         <option
@@ -215,7 +214,6 @@ export default function ReportSort() {
                           event.target.value as SortDirection
                         )
                       }
-                      className="rounded-lg border border-gray-200 dark:border-gray-500 bg-transparent text-sm px-3 py-2 h-7"
                     >
                       {DIRECTION_OPTIONS.map(option => (
                         <option key={option.value} value={option.value}>
@@ -235,7 +233,7 @@ export default function ReportSort() {
                 );
               })}
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-2">
                 <button
                   type="button"
                   onClick={handleAddSort}

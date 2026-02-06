@@ -140,7 +140,6 @@ export default function FieldSelector({
     <div id="field-selector">
       <select
         name="selectedFields"
-        className="w-full bg-transparent border border-gray-200 dark:border-gray-500 rounded-md px-2 py-1.5 h-8 outline-none text-sm"
         value={""}
         onChange={e => {
           const selectedField = config.available.find(field => field.value === e.target.value);

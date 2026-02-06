@@ -131,7 +131,7 @@ export default function ReportAggregation() {
         />
 
         {activeDropdown && (
-          <div className="absolute left-0 mt-2 w-[28rem] rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 shadow-lg z-50">
+          <div className="setting-dropdown">
             <div className="p-3 flex flex-col gap-4">
               {groupedFields.length > 0 && (
                 <div className="flex flex-col gap-2">
@@ -140,7 +140,7 @@ export default function ReportAggregation() {
                     return (
                       <div
                         key={fieldValue}
-                        className="flex items-center justify-between p-2 bg-blue-50 dark:bg-blue-900/30 rounded"
+                        className="flex items-center justify-between p-2 rounded"
                       >
                         <span className="flex-1 text-sm text-gray-700 dark:text-gray-200">
                           {fieldLabelMap.get(fieldValue) ?? fieldValue}
@@ -177,22 +177,19 @@ export default function ReportAggregation() {
               )}
 
               <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
-                  <select
-                    value=""
-                    onChange={event => handleAddGrouping(event.target.value)}
-                    className="flex-1 h-6 bg-transparent text-sm text-gray-700 dark:text-gray-200 focus:outline-none"
-                  >
-                    <option value="" disabled>
-                      Gruppierung hinzufügen
+                <select
+                  value=""
+                  onChange={event => handleAddGrouping(event.target.value)}
+                >
+                  <option value="" disabled>
+                    Gruppierung hinzufügen
+                  </option>
+                  {addableFields.map(field => (
+                    <option key={field.value} value={field.value}>
+                      {field.label}
                     </option>
-                    {addableFields.map(field => (
-                      <option key={field.value} value={field.value}>
-                        {field.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                  ))}
+                </select>
 
                 {groupedFields.length > 0 && (
                   <button

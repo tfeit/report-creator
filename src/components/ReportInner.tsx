@@ -28,7 +28,7 @@ import ReportTitle from "./ReportTitle";
 const PopupChangeData = lazy(() => import("./PopupChangeData"));
 const PopupChangeFields = lazy(() => import("./PopupChangeFields"));
 
-export default function ReportData() {
+export default function ReportInner() {
   const { report, refetch, refetchContent, reportContent, displayFields, filters } = useReport();
   const { handleGroupByColumn, handleSortByColumn } = useReportOperations();
   
@@ -58,6 +58,8 @@ export default function ReportData() {
     () => filters.some(group => group.filters.length > 0),
     [filters]
   );
+
+  console.log(filters);
 
   useEffect(() => {
     const transitionMs = 300;
@@ -140,62 +142,49 @@ export default function ReportData() {
           iconLink={`/berichte`}
         >
           <div className="actions">
-            <Button
-              name="Filter"
+            <button
+              title="Filter"
               onClick={() => setShowFilters(!showFilters)}
-              variant="outlined"
-              color="transparent"
-              size="square"
-              rounded="full"
-              selected={showFilters || hasActiveFilters}
-              icon={FunnelIcon}
-            />
+              className={`${showFilters || hasActiveFilters ? "action selected" : "action"}`}
+            >
+              <FunnelIcon className="w-5 h-5" />
+            </button>
             
-            <Button
-              name="Sortierung"
+            <button
+              title="Sortierung"
               onClick={() => setShowSort(!showSort)}
-              variant="outlined"
-              color="transparent"
-              size="square"
-              rounded="full"
-              selected={showSort || hasActiveSort}
-              icon={ArrowsUpDownIcon}
-            />
+              className={`${showSort || hasActiveSort ? "action selected" : "action"}`}
+            >
+              <ArrowsUpDownIcon className="w-5 h-5" />
+            </button>
             
-            <Button
-              name="Gruppierung"
+            <button
+              title="Gruppierung"
               onClick={() => setShowAggregation(!showAggregation)}
-              variant="outlined"
-              color="transparent"
-              size="square"
-              rounded="full"
-              selected={showAggregation || hasActiveAggregation}
-              icon={Squares2X2Icon}
-            />
+              className={`${showAggregation || hasActiveAggregation ? "action selected" : "action"}`}
+            >
+              <Squares2X2Icon className="w-5 h-5" />
+            </button>
 
-            <Button
-              name="Diagramm"
+            <button
+              title="Diagramm"
               onClick={() => setShowChart(!showChart)}
-              variant="outlined"
-              color="transparent"
-              size="square"
-              rounded="full"
+              className={`${showChart ? "action selected" : "action"}`}
               disabled={!hasActiveAggregation}
-              selected={showChart}
-              icon={ChartBarIcon}
-            />
+            >
+              <ChartBarIcon className="w-5 h-5" />
+            </button>
             
-            <Button
+            <button
+              title="Aktualisieren"
               onClick={() => {
                 refetch();
                 refetchContent();
               }}
-              variant="outlined"
-              color="transparent"
-              size="square"
-              rounded="full"
-              icon={ArrowPathIcon}
-            />
+              className="action"
+            >
+              <ArrowPathIcon className="w-5 h-5" />
+            </button>
 
             <DropdownMenu 
               icon={AdjustmentsHorizontalIcon}
@@ -209,10 +198,10 @@ export default function ReportData() {
         </ReportTitle>
 
         <div
-          className={`flex items-center gap-2 w-full transition-all duration-300 ${
+          className={`report-settings-wrapper ${
             filtersExpanded
-              ? "h-14"
-              : "h-0"
+              ? "open"
+              : "closed"
           }`}
           style={{
             overflow: filtersOverflowVisible ? "visible" : "hidden"
