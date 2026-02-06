@@ -14,10 +14,12 @@ export interface Filter {
   value: string;
 }
 
-export interface FilterGroup {
-  filters: Filter[];
-  connectors: ("AND" | "OR")[];
+export interface Sorting {
+  field: string;
+  direction: "asc" | "desc";
+  order: number;
 }
+
 
 export interface DisplayField {
   field: string;
@@ -64,17 +66,17 @@ export interface Report {
   conditions?: string | unknown;
   meta?: {
     grouping?: MetaGrouping[];
-    listing_filters?: FilterGroup[];
+    listing_filters?: Filter[];
   };
   [key: string]: unknown;
 }
 
 export interface ReportPageData {
-  reportId: string;
   report?: Report | null;
   reportContent?: any[] | null;
   displayFields?: MetaDisplayFields;
-  filters?: FilterGroup[];
+  filters?: Filter[];
+  sorting?: Sorting[];
   chart?: string;
   loading?: boolean;
   loadingContent?: boolean;
@@ -88,9 +90,10 @@ export interface ReportCallbacks {
   onUpdateTitle: (title: string) => Promise<boolean> | boolean;
   onUpdateConditions: (conditions: string) => Promise<boolean> | boolean;
   onUpdateFields: (fields: MetaDisplayFields) => Promise<boolean> | boolean;
-  onUpdateFilters: (filters: FilterGroup[]) => Promise<boolean> | boolean;
+  onUpdateFilters: (filters: Filter[]) => Promise<boolean> | boolean;
+  onUpdateSorting: (sorting: Sorting[]) => Promise<boolean> | boolean;
   onUpdateChart: (chart: string, fields: MetaDisplayFields) => Promise<boolean> | boolean;
-  onDelete: (reportId: string) => Promise<boolean> | boolean;
+  onDelete: () => Promise<boolean> | boolean;
   onNavigateBack?: () => void;
 }
 

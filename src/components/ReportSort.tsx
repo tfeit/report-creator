@@ -4,7 +4,7 @@ import { ChevronDownIcon, ChevronUpIcon, PlusIcon, TrashIcon } from "@heroicons/
 import { useMemo, useState } from "react";
 import { useReport } from "../hooks/useReport";
 import { getAvailableFieldsForReport } from "../utils/reportFiltersUtils";
-import { MetaDisplayFields } from "../types";
+import { MetaDisplayFields, Sorting } from "../types";
 import SettingButton from "./ui/SettingButton";
 
 type SortDirection = "asc" | "desc";
@@ -57,6 +57,22 @@ const reindexSortOrders = (fields: MetaDisplayFields): MetaDisplayFields => {
   });
 };
 
+const buildSortingPayload = (fields: MetaDisplayFields): Sorting[] => {
+  const sorted = fields
+    .filter(field => field.sort)
+    .slice()
+    .sort(
+      (a, b) =>
+        (a.sortOrder ?? a.order ?? 0) - (b.sortOrder ?? b.order ?? 0)
+    );
+
+  return sorted.map((field, index) => ({
+    field: `${field.type}_${field.field}`,
+    direction: field.sort as SortDirection,
+    order: index
+  }));
+};
+
 export default function ReportSort() {
   const { displayFields, setDisplayFields, refetch, callbacks } = useReport();
   const [activeDropdown, setActiveDropdown] = useState(false);
@@ -74,8 +90,10 @@ export default function ReportSort() {
   );
 
   const applySortUpdate = async (nextFields: MetaDisplayFields) => {
-    const success = await callbacks.onUpdateFields(nextFields);
-    if (success) {
+    const normalizedSorting = buildSortingPayload(nextFields);
+    const sortingSuccess = await callbacks.onUpdateSorting(normalizedSorting);
+    const fieldsSuccess = await callbacks.onUpdateFields(nextFields);
+    if (sortingSuccess && fieldsSuccess) {
       setDisplayFields(nextFields);
       refetch();
     }

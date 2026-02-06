@@ -2,30 +2,29 @@
 
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Filter } from "../types";
 import { useReport } from "../hooks/useReport";
 import { getTransformedReportContent } from "../utils/utils";
 import FilterGroupDropdowns from "./FilterGroupDropdowns";
 import {
-  addFilterToGroups,
+  addFilter,
   buildEmptyFilter,
   getAvailableFieldsForReport,
   getArrayFilterOptions,
-  getDefaultRangeFieldForReport,
   getSelectedFieldValues,
-  removeFilterFromGroups,
-  updateFilterOperatorInGroups,
-  updateFilterValueInGroups
+  removeFilter,
+  updateFilterOperator,
+  updateFilterValue
 } from "../utils/reportFiltersUtils";
 import SettingButton from "./ui/SettingButton";
 
 export default function ReportFilters() {
-  const { filters, setFilters, report, displayFields, reportContent } = useReport();
+  const { filters, setFilters, report, displayFields, reportContent, callbacks, refetchContent } = useReport();
+  const updateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const latestFiltersRef = useRef(filters);
 
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const dropdownContainerRef = useRef<HTMLDivElement | null>(null);
   const availableFieldsForReport = getAvailableFieldsForReport(displayFields);
-  const defaultRangeField = getDefaultRangeFieldForReport(displayFields, report?.type);
   const transformedData = useMemo(
     () => getTransformedReportContent(reportContent, report),
     [reportContent, report?.type]
@@ -39,17 +38,6 @@ export default function ReportFilters() {
     });
     return optionsByField;
   }, [availableFieldsForReport, transformedData]);
-
-  useEffect(() => {
-    if (filters.length === 0 && defaultRangeField) {
-      setFilters([
-        {
-          filters: [{ field: defaultRangeField, operator: "between", value: "|" }],
-          connectors: []
-        }
-      ]);
-    }
-  }, [filters.length, defaultRangeField, setFilters]);
 
   useEffect(() => {
     if (!activeDropdown) return;
@@ -67,34 +55,58 @@ export default function ReportFilters() {
     };
   }, [activeDropdown]);
 
+  useEffect(() => {
+    return () => {
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const toggleDropdown = (dropdownId: string) => {
     setActiveDropdown(current => (current === dropdownId ? null : dropdownId));
+  };
+
+  const applyFilters = (nextFilters: typeof filters) => {
+    setFilters(nextFilters);
+    latestFiltersRef.current = nextFilters;
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current);
+    }
+    updateTimeoutRef.current = setTimeout(async () => {
+      try {
+        const success = await callbacks.onUpdateFilters(latestFiltersRef.current);
+        if (success) {
+          refetchContent();
+        }
+      } catch (error) {
+        console.error("Error updating filters:", error);
+      }
+    }, 300);
   };
 
   const handleAddFilter = (fieldValue: string) => {
     if (!fieldValue) return;
     const filterToAdd = buildEmptyFilter(fieldValue);
-    setFilters(addFilterToGroups(filters, filterToAdd, isDefaultRangeFilter));
+    applyFilters(addFilter(filters, filterToAdd));
     setActiveDropdown(null);
   };
 
-  const handleRemoveFilter = (groupIndex: number, filterIndex: number) => {
-    setFilters(removeFilterFromGroups(filters, groupIndex, filterIndex));
+  const handleRemoveFilter = (filterIndex: number) => {
+    applyFilters(removeFilter(filters, filterIndex));
   };
 
-  const handleUpdateFilterOperator = (groupIndex: number, filterIndex: number, operator: string) => {
-    setFilters(updateFilterOperatorInGroups(filters, groupIndex, filterIndex, operator));
+  const handleUpdateFilterOperator = (filterIndex: number, operator: string) => {
+    applyFilters(updateFilterOperator(filters, filterIndex, operator));
   };
 
-  const handleUpdateFilterValue = (groupIndex: number, filterIndex: number, value: string) => {
-    setFilters(updateFilterValueInGroups(filters, groupIndex, filterIndex, value));
+  const handleUpdateFilterValue = (filterIndex: number, value: string) => {
+    applyFilters(updateFilterValue(filters, filterIndex, value));
   };
 
-  const isDefaultRangeFilter = (filter: Filter) =>
-    Boolean(defaultRangeField) && filter.field === defaultRangeField && filter.operator === "between";
   const selectedFieldValues = getSelectedFieldValues(filters);
-  const handleRemoveFilterAndClose = (groupIndex: number, filterIndex: number) => {
-    handleRemoveFilter(groupIndex, filterIndex);
+  const handleRemoveFilterAndClose = (filterIndex: number) => {
+    handleRemoveFilter(filterIndex);
     setActiveDropdown(null);
   };
 
@@ -102,14 +114,13 @@ export default function ReportFilters() {
     <div className="flex flex-wrap items-center gap-2" ref={dropdownContainerRef}>
 
       <FilterGroupDropdowns
-        filters={filters as Array<{ filters: Filter[]; connectors: string[] }>}
+        filters={filters}
         arrayFilterOptions={arrayFilterOptions}
         activeDropdown={activeDropdown}
         toggleDropdown={toggleDropdown}
         onRemoveFilter={handleRemoveFilterAndClose}
         onUpdateFilterOperator={handleUpdateFilterOperator}
         onUpdateFilterValue={handleUpdateFilterValue}
-        isDefaultRangeFilter={isDefaultRangeFilter}
       />
 
       <div className="relative">

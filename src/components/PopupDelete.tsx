@@ -2,11 +2,11 @@ import Popup from "./ui/Popup";
 import { useReport } from "../hooks/useReport";
 
 export default function PopupDelete({ setShowPopup }: { setShowPopup: (show: boolean) => void }) {
-  const { reportId, callbacks } = useReport();
+  const { callbacks } = useReport();
 
   const handleDelete = async () => {
     try {
-      const success = await callbacks.onDelete(reportId);
+      const success = await callbacks.onDelete();
       if (success) {
         callbacks.onNavigateBack?.();
       } else {

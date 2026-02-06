@@ -2,7 +2,7 @@
 
 import { createContext, ReactNode, useEffect, useMemo, useState } from "react";
 import {
-  FilterGroup,
+  Filter,
   MetaDisplayFields,
   Report,
   ReportCallbacks,
@@ -12,15 +12,14 @@ import {
 } from "./types";
 
 export interface ReportContextType {
-  reportId: string;
   report: Report | null | undefined;
   reportContent: any[] | null | undefined;
   displayFields: MetaDisplayFields;
   setDisplayFields: (fields: MetaDisplayFields) => void;
   chart: string;
   setChart: (chart: string) => void;
-  filters: FilterGroup[];
-  setFilters: (filters: FilterGroup[]) => void;
+  filters: Filter[];
+  setFilters: (filters: Filter[]) => void;
   loading: boolean;
   loadingContent: boolean;
   refetch: () => void;
@@ -38,7 +37,6 @@ interface ReportProviderProps extends ReportPageData {
 }
 
 export const ReportProvider = ({
-  reportId,
   report,
   reportContent,
   displayFields,
@@ -54,7 +52,7 @@ export const ReportProvider = ({
   const [currentDisplayFields, setCurrentDisplayFields] = useState<MetaDisplayFields>(
     displayFields ?? []
   );
-  const [currentFilters, setCurrentFilters] = useState<FilterGroup[]>(filters ?? []);
+  const [currentFilters, setCurrentFilters] = useState<Filter[]>(filters ?? []);
   const [currentChart, setCurrentChart] = useState<string>(chart ?? "bar");
 
   useEffect(() => {
@@ -75,7 +73,6 @@ export const ReportProvider = ({
   return (
     <ReportContext.Provider
       value={{
-        reportId,
         report,
         reportContent,
         displayFields: currentDisplayFields,

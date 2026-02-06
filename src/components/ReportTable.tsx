@@ -11,30 +11,13 @@ import {
 } from "../fieldConstants";
 import ReportChartWrapper from "./ReportChartWrapper";
 import { getTransformedReportContent } from "../utils/utils";
-import { MetaDisplayFields, Report as ReportType } from "../types";
+import { Filter, MetaDisplayFields, Report as ReportType } from "../types";
 import { useReport } from "../hooks/useReport";
 
 interface Field {
   value: string;
   label: string;
   dataType: string;
-}
-
-interface Filter {
-  field: string;
-  operator:
-    | "equals"
-    | "greater"
-    | "less"
-    | "contains"
-    | "startsWith"
-    | "endsWith"
-    | "between"
-    | "array_contains"
-    | "array_not_contains"
-    | "array_is_empty"
-    | "array_is_not_empty";
-  value: string | number;
 }
 
 interface TableErrorBoundaryState {
@@ -154,196 +137,169 @@ function ReportTable({ handleGroupByColumn, handleSortByColumn, showChart }: Rep
     );
 
     if (filters && Array.isArray(filters) && filters.length > 0) {
-      data = data.filter(item => {
-        return filters.every(filterGroup => {
-          if (!filterGroup.filters || filterGroup.filters.length === 0) {
+      const isFilterApplied = (filter: Filter) => {
+        if (!filter.operator) return false;
+        if (filter.operator === "array_is_empty" || filter.operator === "array_is_not_empty") {
+          return true;
+        }
+        if (filter.operator === "array_contains" || filter.operator === "array_not_contains") {
+          const selectedValues = String(filter.value)
+            .split("||")
+            .filter(entry => entry.trim() !== "");
+          return selectedValues.length > 0;
+        }
+        if (filter.operator === "between") {
+          const [rawFrom, rawTo] = String(filter.value).split("|");
+          return Boolean(rawFrom) && Boolean(rawTo);
+        }
+        return Boolean(String(filter.value).trim());
+      };
+
+      const matchesFilter = (item: any, filter: Filter) => {
+        const value = item[filter.field];
+        const filterValue = filter.value;
+        let currentResult = true;
+        switch (filter.operator) {
+          case "equals":
+            if (isDateLike(value) || isDateLike(filterValue)) {
+              const left = toDateMs(value);
+              const right = toDateMs(filterValue);
+              currentResult = left !== null && right !== null && left === right;
+            } else if (toNumber(value) !== null && toNumber(filterValue) !== null) {
+              currentResult = Number(value) === Number(filterValue);
+            } else {
+              currentResult = String(value) === String(filterValue);
+            }
+            break;
+          case "greater":
+            if (isDateLike(value) || isDateLike(filterValue)) {
+              const left = toDateMs(value);
+              const right = toDateMs(filterValue);
+              currentResult = left !== null && right !== null && left > right;
+            } else {
+              const left = toNumber(value);
+              const right = toNumber(filterValue);
+              currentResult = left !== null && right !== null && left > right;
+            }
+            break;
+          case "less":
+            if (isDateLike(value) || isDateLike(filterValue)) {
+              const left = toDateMs(value);
+              const right = toDateMs(filterValue);
+              currentResult = left !== null && right !== null && left < right;
+            } else {
+              const left = toNumber(value);
+              const right = toNumber(filterValue);
+              currentResult = left !== null && right !== null && left < right;
+            }
+            break;
+          case "contains":
+            currentResult = String(value).toLowerCase().includes(String(filterValue).toLowerCase());
+            break;
+          case "startsWith":
+            currentResult = String(value).toLowerCase().startsWith(String(filterValue).toLowerCase());
+            break;
+          case "endsWith":
+            currentResult = String(value).toLowerCase().endsWith(String(filterValue).toLowerCase());
+            break;
+          case "between": {
+            const [rawFrom, rawTo] = String(filterValue).split("|");
+            const hasFrom = Boolean(rawFrom);
+            const hasTo = Boolean(rawTo);
+            if (!hasFrom && !hasTo) {
+              currentResult = true;
+              break;
+            }
+            const useDate = isDateLike(value) || isDateLike(rawFrom) || isDateLike(rawTo);
+            if (useDate) {
+              const current = toDateMs(value);
+              const from = hasFrom ? toDateMs(rawFrom) : null;
+              const to = hasTo ? toDateMs(rawTo) : null;
+              if (current === null || (hasFrom && from === null) || (hasTo && to === null)) {
+                currentResult = false;
+              } else if (hasFrom && hasTo) {
+                currentResult = current >= (from as number) && current <= (to as number);
+              } else if (hasFrom) {
+                currentResult = current >= (from as number);
+              } else {
+                currentResult = current <= (to as number);
+              }
+            } else {
+              const current = toNumber(value);
+              const from = hasFrom ? toNumber(rawFrom) : null;
+              const to = hasTo ? toNumber(rawTo) : null;
+              if (current === null || (hasFrom && from === null) || (hasTo && to === null)) {
+                currentResult = false;
+              } else if (hasFrom && hasTo) {
+                currentResult = current >= (from as number) && current <= (to as number);
+              } else if (hasFrom) {
+                currentResult = current >= (from as number);
+              } else {
+                currentResult = current <= (to as number);
+              }
+            }
+            break;
+          }
+          case "array_contains": {
+            if (!Array.isArray(value)) {
+              currentResult = false;
+              break;
+            }
+            const selectedValues = String(filterValue)
+              .split("||")
+              .filter(entry => entry.trim() !== "")
+              .map(entry => entry.toLowerCase());
+            const normalized = value
+              .filter((entry: any) => entry !== null && entry !== undefined)
+              .map((entry: string) => entry.toLowerCase());
+            currentResult = selectedValues.every(entry => normalized.includes(entry));
+            break;
+          }
+          case "array_not_contains": {
+            if (!Array.isArray(value)) {
+              currentResult = true;
+              break;
+            }
+            const selectedValues = String(filterValue)
+              .split("||")
+              .filter(entry => entry.trim() !== "")
+              .map(entry => entry.toLowerCase());
+            const normalized = value
+              .filter((entry: any) => entry !== null && entry !== undefined)
+              .map((entry: string) => entry.toLowerCase());
+            currentResult = selectedValues.some(entry => !normalized.includes(entry));
+            break;
+          }
+          case "array_is_empty": {
+            if (Array.isArray(value)) {
+              currentResult = value.length === 0;
+            } else {
+              currentResult = value === null || value === undefined || String(value).trim() === "";
+            }
+            break;
+          }
+          case "array_is_not_empty": {
+            if (Array.isArray(value)) {
+              currentResult = value.length > 0;
+            } else {
+              currentResult = value !== null && value !== undefined && String(value).trim() !== "";
+            }
+            break;
+          }
+          default:
+            currentResult = true;
+        }
+        return currentResult;
+      };
+
+      data = data.filter(item =>
+        filters.every(filter => {
+          if (!isFilterApplied(filter)) {
             return true;
           }
-
-          const isFilterApplied = (filter: Filter) => {
-            if (!filter.operator) return false;
-            if (filter.operator === "array_is_empty" || filter.operator === "array_is_not_empty") {
-              return true;
-            }
-            if (filter.operator === "array_contains" || filter.operator === "array_not_contains") {
-              const selectedValues = String(filter.value)
-                .split("||")
-                .filter(entry => entry.trim() !== "");
-              return selectedValues.length > 0;
-            }
-            if (filter.operator === "between") {
-              const [rawFrom, rawTo] = String(filter.value).split("|");
-              return Boolean(rawFrom) && Boolean(rawTo);
-            }
-            return Boolean(String(filter.value).trim());
-          };
-
-          let result = true;
-          let hasResult = false;
-          for (let i = 0; i < filterGroup.filters.length; i += 1) {
-            const filter = filterGroup.filters[i];
-            const value = item[filter.field];
-            const filterValue = filter.value;
-            const applied = isFilterApplied(filter as any);
-
-            let currentResult: boolean;
-            if (!applied) {
-              if (!hasResult) {
-                continue;
-              }
-              const connector = filterGroup.connectors[i - 1];
-              currentResult = connector === "OR" ? false : true;
-            } else {
-            switch (filter.operator) {
-              case "equals":
-                if (isDateLike(value) || isDateLike(filterValue)) {
-                  const left = toDateMs(value);
-                  const right = toDateMs(filterValue);
-                  currentResult = left !== null && right !== null && left === right;
-                } else if (toNumber(value) !== null && toNumber(filterValue) !== null) {
-                  currentResult = Number(value) === Number(filterValue);
-                } else {
-                  currentResult = String(value) === String(filterValue);
-                }
-                break;
-              case "greater":
-                if (isDateLike(value) || isDateLike(filterValue)) {
-                  const left = toDateMs(value);
-                  const right = toDateMs(filterValue);
-                  currentResult = left !== null && right !== null && left > right;
-                } else {
-                  const left = toNumber(value);
-                  const right = toNumber(filterValue);
-                  currentResult = left !== null && right !== null && left > right;
-                }
-                break;
-              case "less":
-                if (isDateLike(value) || isDateLike(filterValue)) {
-                  const left = toDateMs(value);
-                  const right = toDateMs(filterValue);
-                  currentResult = left !== null && right !== null && left < right;
-                } else {
-                  const left = toNumber(value);
-                  const right = toNumber(filterValue);
-                  currentResult = left !== null && right !== null && left < right;
-                }
-                break;
-              case "contains":
-                currentResult = String(value).toLowerCase().includes(String(filterValue).toLowerCase());
-                break;
-              case "startsWith":
-                currentResult = String(value).toLowerCase().startsWith(String(filterValue).toLowerCase());
-                break;
-              case "endsWith":
-                currentResult = String(value).toLowerCase().endsWith(String(filterValue).toLowerCase());
-                break;
-              case "between": {
-                const [rawFrom, rawTo] = String(filterValue).split("|");
-                const hasFrom = Boolean(rawFrom);
-                const hasTo = Boolean(rawTo);
-                if (!hasFrom && !hasTo) {
-                  currentResult = true;
-                  break;
-                }
-                const useDate = isDateLike(value) || isDateLike(rawFrom) || isDateLike(rawTo);
-                if (useDate) {
-                  const current = toDateMs(value);
-                  const from = hasFrom ? toDateMs(rawFrom) : null;
-                  const to = hasTo ? toDateMs(rawTo) : null;
-                  if (current === null || (hasFrom && from === null) || (hasTo && to === null)) {
-                    currentResult = false;
-                  } else if (hasFrom && hasTo) {
-                    currentResult = current >= (from as number) && current <= (to as number);
-                  } else if (hasFrom) {
-                    currentResult = current >= (from as number);
-                  } else {
-                    currentResult = current <= (to as number);
-                  }
-                } else {
-                  const current = toNumber(value);
-                  const from = hasFrom ? toNumber(rawFrom) : null;
-                  const to = hasTo ? toNumber(rawTo) : null;
-                  if (current === null || (hasFrom && from === null) || (hasTo && to === null)) {
-                    currentResult = false;
-                  } else if (hasFrom && hasTo) {
-                    currentResult = current >= (from as number) && current <= (to as number);
-                  } else if (hasFrom) {
-                    currentResult = current >= (from as number);
-                  } else {
-                    currentResult = current <= (to as number);
-                  }
-                }
-                break;
-              }
-              case "array_contains": {
-                const values = Array.isArray(value)
-                  ? value
-                  : value !== null && value !== undefined
-                    ? [value]
-                    : [];
-                const normalized = values.map(entry => String(entry).toLowerCase());
-                const selectedValues = String(filterValue)
-                  .split("||")
-                  .filter(entry => entry.trim() !== "")
-                  .map(entry => entry.toLowerCase());
-                currentResult = selectedValues.some(entry => normalized.includes(entry));
-                break;
-              }
-              case "array_not_contains": {
-                const values = Array.isArray(value)
-                  ? value
-                  : value !== null && value !== undefined
-                    ? [value]
-                    : [];
-                const normalized = values.map(entry => String(entry).toLowerCase());
-                const selectedValues = String(filterValue)
-                  .split("||")
-                  .filter(entry => entry.trim() !== "")
-                  .map(entry => entry.toLowerCase());
-                currentResult = selectedValues.some(entry => !normalized.includes(entry));
-                break;
-              }
-              case "array_is_empty": {
-                if (Array.isArray(value)) {
-                  currentResult = value.length === 0;
-                } else {
-                  currentResult = value === null || value === undefined || String(value).trim() === "";
-                }
-                break;
-              }
-              case "array_is_not_empty": {
-                if (Array.isArray(value)) {
-                  currentResult = value.length > 0;
-                } else {
-                  currentResult = value !== null && value !== undefined && String(value).trim() !== "";
-                }
-                break;
-              }
-              default:
-                currentResult = true;
-            }
-            }
-
-            if (!hasResult) {
-              result = currentResult;
-              hasResult = true;
-              continue;
-            }
-            if (i > 0) {
-              const connector = filterGroup.connectors[i - 1];
-              if (connector === "AND") {
-                result = result && currentResult;
-              } else if (connector === "OR") {
-                result = result || currentResult;
-              }
-            } else {
-              result = currentResult;
-            }
-          }
-
-          return result;
-        });
-      });
+          return matchesFilter(item, filter);
+        })
+      );
     }
 
     const sortRules = displayFields

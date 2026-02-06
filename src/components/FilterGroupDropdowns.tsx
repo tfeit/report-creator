@@ -15,14 +15,13 @@ import {
 import SettingButton from "./ui/SettingButton";
 
 type FilterGroupDropdownsProps = {
-  filters: Array<{ filters: Filter[]; connectors: string[] }>;
+  filters: Filter[];
   arrayFilterOptions: Map<string, string[]>;
   activeDropdown: string | null;
   toggleDropdown: (dropdownId: string) => void;
-  onRemoveFilter: (groupIndex: number, filterIndex: number) => void;
-  onUpdateFilterOperator: (groupIndex: number, filterIndex: number, operator: string) => void;
-  onUpdateFilterValue: (groupIndex: number, filterIndex: number, value: string) => void;
-  isDefaultRangeFilter: (filter: Filter) => boolean;
+  onRemoveFilter: (filterIndex: number) => void;
+  onUpdateFilterOperator: (filterIndex: number, operator: string) => void;
+  onUpdateFilterValue: (filterIndex: number, value: string) => void;
 };
 
 export default function FilterGroupDropdowns({
@@ -33,21 +32,11 @@ export default function FilterGroupDropdowns({
   onRemoveFilter,
   onUpdateFilterOperator,
   onUpdateFilterValue,
-  isDefaultRangeFilter
 }: FilterGroupDropdownsProps) {
   return (
     <>
-      {filters.map((group, groupIndex) => {
-        const groupFilters = (group as any).filters as Filter[];
-        const hasOnlyDefault = groupFilters.length === 1 && isDefaultRangeFilter(groupFilters[0]);
-        if (hasOnlyDefault) {
-          return null;
-        }
-        return groupFilters.map((filter: Filter, filterIndex: number) => {
-          if (isDefaultRangeFilter(filter)) {
-            return null;
-          }
-          const filterKey = `${groupIndex}-${filterIndex}`;
+      {filters.map((filter: Filter, filterIndex: number) => {
+          const filterKey = `${filterIndex}`;
           const fieldDataType = getFieldDataType(filter.field);
           const isArrayField = fieldDataType === "array";
           const isArrayEmptyOperator =
@@ -73,18 +62,11 @@ export default function FilterGroupDropdowns({
                         <div className="text-xs text-gray-500 dark:text-gray-400">
                           {getFieldOriginForFilter(filter.field)}
                         </div>
-                        {filterIndex > 0 && (
-                          <input
-                            type="hidden"
-                            name={`filter_${groupIndex}_${filterIndex}_connector`}
-                            value="AND"
-                          />
-                        )}
                         <select
-                          name={`filter_${groupIndex}_${filterIndex}_operator`}
+                          name={`filter_${filterIndex}_operator`}
                           value={filter.operator}
                           onChange={e =>
-                            onUpdateFilterOperator(groupIndex, filterIndex, e.target.value)
+                            onUpdateFilterOperator(filterIndex, e.target.value)
                           }
                         >
                           {getOperatorOptionsForField(filter.field).map(option => (
@@ -97,7 +79,7 @@ export default function FilterGroupDropdowns({
 
                       <button
                         type="button"
-                        onClick={() => onRemoveFilter(groupIndex, filterIndex)}
+                        onClick={() => onRemoveFilter(filterIndex)}
                         className="w-5 h-5 text-red-500 hover:text-red-700"
                       >
                         <TrashIcon className="w-4 h-4" />
@@ -106,31 +88,28 @@ export default function FilterGroupDropdowns({
 
                     {fieldDataType === "number" ? (
                       <FilterNumberField
-                        groupIndex={groupIndex}
                         filterIndex={filterIndex}
                         value={String(filter.value)}
                         operator={filter.operator}
                         onChange={nextValue =>
-                          onUpdateFilterValue(groupIndex, filterIndex, nextValue)
+                            onUpdateFilterValue(filterIndex, nextValue)
                         }
                       />
                     ) : fieldDataType === "date" ? (
                       <FilterDateField
-                        groupIndex={groupIndex}
                         filterIndex={filterIndex}
                         value={String(filter.value)}
                         operator={filter.operator}
                         onChange={nextValue =>
-                          onUpdateFilterValue(groupIndex, filterIndex, nextValue)
+                          onUpdateFilterValue(filterIndex, nextValue)
                         }
                       />
                     ) : fieldDataType === "string" ? (
                       <FilterStringField
-                        groupIndex={groupIndex}
                         filterIndex={filterIndex}
                         value={String(filter.value)}
                         onChange={nextValue =>
-                          onUpdateFilterValue(groupIndex, filterIndex, nextValue)
+                          onUpdateFilterValue(filterIndex, nextValue)
                         }
                       />
                     ) : isArrayField ? (
@@ -138,19 +117,19 @@ export default function FilterGroupDropdowns({
                         <FilterArrayField
                           selectedValues={selectedArrayValues}
                           options={arrayOptions}
-                          onClear={() => onUpdateFilterValue(groupIndex, filterIndex, "")}
+                          onClear={() => onUpdateFilterValue(filterIndex, "")}
                           onChange={nextValues =>
-                            onUpdateFilterValue(groupIndex, filterIndex, nextValues.join("||"))
+                            onUpdateFilterValue(filterIndex, nextValues.join("||"))
                           }
                         />
                       )
                     ) : (
                       <Input
-                        name={`filter_${groupIndex}_${filterIndex}_value`}
+                        name={`filter_${filterIndex}_value`}
                         type={getInputTypeForField(filter.field)}
                         value={String(filter.value)}
                         onChange={e =>
-                          onUpdateFilterValue(groupIndex, filterIndex, e.target.value)
+                          onUpdateFilterValue(filterIndex, e.target.value)
                         }
                         placeholder="Wert eingeben"
                       />
@@ -160,8 +139,7 @@ export default function FilterGroupDropdowns({
               )}
             </div>
           );
-        });
-      })}
+        })}
     </>
   );
 }

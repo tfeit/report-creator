@@ -93,35 +93,6 @@ export const getAvailableFieldsForReport = (
   return AVAILABLE_FIELDS.filter(field => reportFieldValues.has(field.value));
 };
 
-export const isDefaultRangeField = (fieldValue: string) =>
-  fieldValue.startsWith("output_") || fieldValue.startsWith("organisation_statistics_");
-
-export const getDefaultRangeFieldForReport = (
-  displayFields: DisplayField[] | MetaDisplayFields | undefined,
-  reportType: Report["type"] | undefined
-) => {
-  const hasOutputFields = displayFields?.some(field => field.type === "output");
-  const hasOrganisationStatisticsFields = displayFields?.some(
-    field => field.type === "organisation_statistics"
-  );
-  if (hasOutputFields) {
-    return "output_dateStart";
-  }
-  if (hasOrganisationStatisticsFields) {
-    return "organisation_statistics_year";
-  }
-  if (reportType === "schools_statistics_offers") {
-    return "output_dateStart";
-  }
-  if (reportType === "organisations_offers_statistics") {
-    return "output_dateStart";
-  }
-  if (reportType === "organisations_statistics") {
-    return "organisation_statistics_year";
-  }
-  return "";
-};
-
 export const getFieldDataType = (fieldValue: string) =>
   AVAILABLE_FIELDS.find(field => field.value === fieldValue)?.dataType;
 
@@ -138,15 +109,11 @@ export const getOperatorOptionsForField = (fieldValue: string) => {
 
 export const buildEmptyFilter = (fieldValue: string): Filter => {
   const dataType = getFieldDataType(fieldValue);
-  const defaultOperator = isDefaultRangeField(fieldValue)
-    ? "between"
-    : dataType === "array"
-      ? "array_contains"
-      : "equals";
+  const defaultOperator = dataType === "array" ? "array_contains" : "equals";
   return {
     field: fieldValue,
     operator: defaultOperator,
-    value: defaultOperator === "between" ? "|" : ""
+    value: ""
   };
 };
 

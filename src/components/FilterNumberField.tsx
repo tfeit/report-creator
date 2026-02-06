@@ -1,7 +1,6 @@
 import Input from "./ui/Input";
 
 type FilterNumberFieldProps = {
-  groupIndex: number;
   filterIndex: number;
   value: string;
   operator: string;
@@ -9,7 +8,6 @@ type FilterNumberFieldProps = {
 };
 
 export default function FilterNumberField({
-  groupIndex,
   filterIndex,
   value,
   operator,
@@ -20,7 +18,7 @@ export default function FilterNumberField({
     return (
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         <Input
-          name={`filter_${groupIndex}_${filterIndex}_from`}
+          name={`filter_${filterIndex}_from`}
           label="Von"
           type="number"
           value={from || ""}
@@ -28,7 +26,7 @@ export default function FilterNumberField({
           placeholder="Von"
         />
         <Input
-          name={`filter_${groupIndex}_${filterIndex}_to`}
+          name={`filter_${filterIndex}_to`}
           label="Bis"
           type="number"
           value={to || ""}
@@ -41,7 +39,7 @@ export default function FilterNumberField({
 
   return (
     <Input
-      name={`filter_${groupIndex}_${filterIndex}_value`}
+      name={`filter_${filterIndex}_value`}
       type="number"
       value={String(value)}
       onChange={e => onChange(e.target.value)}

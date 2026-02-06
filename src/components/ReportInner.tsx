@@ -54,12 +54,7 @@ export default function ReportInner() {
     () => displayFields.some(field => Boolean(field.grouping)),
     [displayFields]
   );
-  const hasActiveFilters = useMemo(
-    () => filters.some(group => group.filters.length > 0),
-    [filters]
-  );
-
-  console.log(filters);
+  const hasActiveFilters = useMemo(() => filters.length > 0, [filters]);
 
   useEffect(() => {
     const transitionMs = 300;

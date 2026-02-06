@@ -7,7 +7,7 @@ export type {
   ReportPageData,
   Report,
   DisplayField,
-  FilterGroup,
+  Filter,
   MetaDisplayFields,
   WorkspaceCollection,
   WorkspaceListing
