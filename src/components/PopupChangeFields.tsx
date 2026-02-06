@@ -4,10 +4,15 @@ import FieldSelector from "./FieldSelector";
 import { DisplayField, MetaDisplayFields } from "../types";
 import { useReport } from "../hooks/useReport";
 
-const FIELD_TYPES = ["organisation", "organisation_statistics", "school", "offer", "output"] as const;
-
 export default function PopupChangeFields({ setShowPopup }: { setShowPopup: (show: boolean) => void }) {
-  const { report, refetch, displayFields: contextDisplayFields, setDisplayFields: setContextDisplayFields, callbacks } = useReport();
+  const {
+    report,
+    refetch,
+    displayFields: contextDisplayFields,
+    setDisplayFields: setContextDisplayFields,
+    callbacks,
+    config
+  } = useReport();
 
   const [displayFields, setDisplayFields] = useState<DisplayField[]>(() => {
     return contextDisplayFields as unknown as DisplayField[] || [];
@@ -32,7 +37,13 @@ export default function PopupChangeFields({ setShowPopup }: { setShowPopup: (sho
       onBack={() => setShowPopup(false)}
       onBackTitle={"Abbrechen"}
     >
-      {FIELD_TYPES.map(type => (
+      {(() => {
+        const reportType = report?.type || "";
+        const configuredTypes = config.reportTypeEntities?.[reportType];
+        const fallbackTypes = Object.keys(config.fieldsByEntity ?? {});
+        const types = configuredTypes && configuredTypes.length > 0 ? configuredTypes : fallbackTypes;
+        return types;
+      })().map(type => (
         <FieldSelector
           key={type}
           type={type}
@@ -40,6 +51,7 @@ export default function PopupChangeFields({ setShowPopup }: { setShowPopup: (sho
           displayFields={displayFields as unknown as MetaDisplayFields}
           onDisplayFieldsChange={setDisplayFields as unknown as (newFields: MetaDisplayFields) => void}
           placeholder="Felder auswählen"
+          config={config}
         />
       ))}
     </Popup>

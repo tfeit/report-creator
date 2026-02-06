@@ -18,13 +18,22 @@ import {
 import SettingButton from "./ui/SettingButton";
 
 export default function ReportFilters() {
-  const { filters, setFilters, report, displayFields, reportContent, callbacks, refetchContent } = useReport();
+  const {
+    filters,
+    setFilters,
+    report,
+    displayFields,
+    reportContent,
+    callbacks,
+    refetchContent,
+    config
+  } = useReport();
   const updateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latestFiltersRef = useRef(filters);
 
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const dropdownContainerRef = useRef<HTMLDivElement | null>(null);
-  const availableFieldsForReport = getAvailableFieldsForReport(displayFields);
+  const availableFieldsForReport = getAvailableFieldsForReport(displayFields, config);
   const transformedData = useMemo(
     () => getTransformedReportContent(reportContent, report),
     [reportContent, report?.type]
@@ -87,7 +96,7 @@ export default function ReportFilters() {
 
   const handleAddFilter = (fieldValue: string) => {
     if (!fieldValue) return;
-    const filterToAdd = buildEmptyFilter(fieldValue);
+    const filterToAdd = buildEmptyFilter(fieldValue, config);
     applyFilters(addFilter(filters, filterToAdd));
     setActiveDropdown(null);
   };
@@ -121,6 +130,7 @@ export default function ReportFilters() {
         onRemoveFilter={handleRemoveFilterAndClose}
         onUpdateFilterOperator={handleUpdateFilterOperator}
         onUpdateFilterValue={handleUpdateFilterValue}
+        config={config}
       />
 
       <div className="relative">

@@ -6,6 +6,7 @@ import {
   MetaDisplayFields,
   Report,
   ReportCallbacks,
+  ReportConfig,
   ReportPageData,
   WorkspaceCollection,
   WorkspaceListing
@@ -27,6 +28,7 @@ export interface ReportContextType {
   workspaceCollections: WorkspaceCollection[];
   workspaceListings: WorkspaceListing[];
   callbacks: ReportCallbacks;
+  config: ReportConfig;
 }
 
 export const ReportContext = createContext<ReportContextType | undefined>(undefined);
@@ -46,6 +48,7 @@ export const ReportProvider = ({
   loadingContent = false,
   workspaceCollections,
   workspaceListings,
+  config,
   callbacks,
   children
 }: ReportProviderProps) => {
@@ -87,7 +90,8 @@ export const ReportProvider = ({
         refetchContent,
         workspaceCollections: workspaceCollections ?? [],
         workspaceListings: workspaceListings ?? [],
-        callbacks
+        callbacks,
+        config
       }}
     >
       {children}

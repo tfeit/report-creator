@@ -2,23 +2,10 @@ import React, { Component, Suspense, useMemo, useState } from "react";
 import Button from "./ui/Button";
 import Popup from "./ui/Popup";
 import TableWithGroups from "./ui/TableWithGroups";
-import {
-  ORGANSIATIONFIELDS,
-  SCHOOLFIELDS,
-  OFFERFIELDS,
-  OUTPUTFIELDS,
-  ORGANISATIONSTATISTICSFIELDS
-} from "../fieldConstants";
 import ReportChartWrapper from "./ReportChartWrapper";
-import { getTransformedReportContent } from "../utils/utils";
+import { getFieldLabelFromConfig, getTransformedReportContent } from "../utils/utils";
 import { Filter, MetaDisplayFields, Report as ReportType } from "../types";
 import { useReport } from "../hooks/useReport";
-
-interface Field {
-  value: string;
-  label: string;
-  dataType: string;
-}
 
 interface TableErrorBoundaryState {
   hasError: boolean;
@@ -60,18 +47,6 @@ class TableErrorBoundary extends Component<TableErrorBoundaryProps, TableErrorBo
     return this.props.children;
   }
 }
-
-const getFieldLabel = (key: string): string => {
-  const allFields: Field[] = [
-    ...ORGANSIATIONFIELDS,
-    ...ORGANISATIONSTATISTICSFIELDS,
-    ...SCHOOLFIELDS,
-    ...OFFERFIELDS,
-    ...OUTPUTFIELDS
-  ];
-  const field = allFields.find(f => f.value === key);
-  return field ? field.label : key.charAt(0).toUpperCase() + key.slice(1);
-};
 
 const isDateLike = (value: unknown): boolean => {
   if (value instanceof Date) return true;
@@ -121,7 +96,7 @@ const normalizeSortValue = (
 
 function ReportTable({ handleGroupByColumn, handleSortByColumn, showChart }: ReportTableProps): React.ReactNode {
   const [selectedCooperations, setSelectedCooperations] = useState<any>(null);
-  const { report, reportContent, loadingContent, displayFields, filters } = useReport();
+  const { report, reportContent, loadingContent, displayFields, filters, config } = useReport();
 
   const hasGrouping = displayFields.some(field => field.grouping);
   const reportType = report?.type;
@@ -355,10 +330,8 @@ function ReportTable({ handleGroupByColumn, handleSortByColumn, showChart }: Rep
   const columns = sortedDisplayFields
     .map(displayField => {
       const key = `${displayField.type}_${displayField.field}`;
-      const headerName = getFieldLabel(displayField.field);
-      const isArrayField = ["regionen", "sdgs", "handlungsfelder", "zielgruppen", "bildungsabschnitte"].includes(
-        displayField.field
-      );
+      const headerName = getFieldLabelFromConfig(config, displayField.type, displayField.field);
+      const isArrayField = displayField.dataType === "array";
 
       return {
         accessorKey: key,
@@ -416,6 +389,7 @@ function ReportTable({ handleGroupByColumn, handleSortByColumn, showChart }: Rep
           noDataMessage={"Keine Einträge gefunden"}
           handleGroupByColumn={handleGroupByColumn}
           displayFields={displayFields as MetaDisplayFields}
+          config={config}
         />
       </div>
 

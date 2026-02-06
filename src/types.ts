@@ -20,6 +20,7 @@ export interface Sorting {
   order: number;
 }
 
+export type FieldDataType = "number" | "string" | "boolean" | "date" | "array" | "float";
 
 export interface DisplayField {
   field: string;
@@ -27,7 +28,7 @@ export interface DisplayField {
   visible: boolean;
   order: number;
   width?: string;
-  dataType?: "number" | "string" | "boolean" | "date" | "array";
+  dataType?: FieldDataType;
   grouping?: boolean;
   aggregation?: "none" | "sum" | "average" | "count" | "min" | "max";
   sort?: "asc" | "desc";
@@ -37,7 +38,7 @@ export interface DisplayField {
 export type MetaDisplayFields = Array<{
   field: string;
   type: string;
-  dataType: "number" | "string" | "boolean" | "date" | "array";
+  dataType: FieldDataType;
   visible: boolean;
   order: number;
   width?: number;
@@ -66,9 +67,21 @@ export interface Report {
   conditions?: string | unknown;
   meta?: {
     grouping?: MetaGrouping[];
-    listing_filters?: Filter[];
   };
   [key: string]: unknown;
+}
+
+export interface ReportFieldConfig {
+  value: string;
+  label: string;
+  dataType: FieldDataType;
+}
+
+export type ReportEntityType = string;
+
+export interface ReportConfig {
+  fieldsByEntity: Record<ReportEntityType, ReportFieldConfig[]>;
+  reportTypeEntities: Record<string, ReportEntityType[]>;
 }
 
 export interface ReportPageData {
@@ -82,6 +95,7 @@ export interface ReportPageData {
   loadingContent?: boolean;
   workspaceCollections?: WorkspaceCollection[];
   workspaceListings?: WorkspaceListing[];
+  config: ReportConfig;
 }
 
 export interface ReportCallbacks {

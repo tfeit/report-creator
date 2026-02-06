@@ -12,8 +12,8 @@ import {
 import { ChevronDownIcon, PlusIcon } from "@heroicons/react/24/outline";
 import DropdownMenu from "./DropdownMenu";
 import Button from "./Button";
-import { MetaDisplayFields } from "../../types";
-import { getFieldLabel } from "../../utils/utils";
+import { MetaDisplayFields, ReportConfig } from "../../types";
+import { getFieldLabelFromConfig } from "../../utils/utils";
 import {
   TableBody,
   Table,
@@ -51,23 +51,7 @@ interface TableNewProps {
   setCurrentTab?: (tab: string) => void;
   displayFields: MetaDisplayFields;
   handleGroupByColumn: (columnId: string) => void;
-}
-
-const ARRAY_FIELDS = [
-  "handlungsfelder",
-  "sdgs",
-  "regionen",
-  "targetgroups",
-  "zielgruppen",
-  "evaluation",
-  "ikom",
-  "bildungsabschnitte"
-];
-
-function isArrayField(fieldName: string): boolean {
-  const fieldParts = fieldName.split("_");
-  const field = fieldParts[fieldParts.length - 1];
-  return ARRAY_FIELDS.includes(field);
+  config: ReportConfig;
 }
 
 const TableWithGroups: React.FC<TableNewProps> = ({
@@ -87,10 +71,22 @@ const TableWithGroups: React.FC<TableNewProps> = ({
   tabKey = "status",
   setCurrentTab,
   displayFields,
-  handleGroupByColumn
+  handleGroupByColumn,
+  config
 }) => {
   const [sorting, setSorting] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<string | null>(enableTabs ? "active" : null);
+
+  const dataTypeByKey = React.useMemo(
+    () =>
+      new Map(
+        displayFields.map(field => [`${field.field}_${field.type}`, field.dataType])
+      ),
+    [displayFields]
+  );
+
+  const isArrayField = (fieldKey: string | undefined) =>
+    fieldKey ? dataTypeByKey.get(fieldKey) === "array" : false;
 
   useEffect(() => {
     if (setCurrentTab && activeTab) {
@@ -114,7 +110,7 @@ const TableWithGroups: React.FC<TableNewProps> = ({
       .sort((a, b) => a.order - b.order)
       .map(field => ({
         accessorKey: `${field.field}_${field.type}`,
-        header: getFieldLabel(field.field),
+        header: getFieldLabelFromConfig(config, field.type, field.field),
         size: field.width ? field.width : undefined,
         cell: ({ row }: { row: any }) => {
           const value = row.original[field.field];
@@ -142,7 +138,7 @@ const TableWithGroups: React.FC<TableNewProps> = ({
           );
         }
       }));
-  }, [displayFields]);
+  }, [displayFields, config]);
 
   const groupedData = React.useMemo(() => {
     const groupingColumns = columns.filter(col => col.grouping);
@@ -186,21 +182,21 @@ const TableWithGroups: React.FC<TableNewProps> = ({
         <div className="flex gap-4 mb-4">
           <Button
             variant={activeTab === "active" ? "filled" : "outlined"}
-            size="small"
+            size="regular"
             onClick={() => setActiveTab("active")}
           >
             Aktiv
           </Button>
           <Button
             variant={activeTab === "archive" ? "filled" : "outlined"}
-            size="small"
+            size="regular"
             onClick={() => setActiveTab("archive")}
           >
             Archiviert
           </Button>
           <Button
             variant={activeTab === "delete" ? "filled" : "outlined"}
-            size="small"
+            size="regular"
             onClick={() => setActiveTab("delete")}
           >
             Papierkorb

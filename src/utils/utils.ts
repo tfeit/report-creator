@@ -1,11 +1,4 @@
-import {
-  OFFERFIELDS,
-  ORGANISATIONSTATISTICSFIELDS,
-  ORGANSIATIONFIELDS,
-  OUTPUTFIELDS,
-  SCHOOLFIELDS
-} from "../fieldConstants";
-import { DisplayField, MetaDisplayFields, Report } from "../types";
+import { DisplayField, MetaDisplayFields, Report, ReportConfig } from "../types";
 
 export const transformOrganisationData = (data: any) => {
   if (!data) return data;
@@ -215,22 +208,21 @@ export const getTransformedReportContent = (
   return transformedData;
 };
 
-export const getFieldLabel = (key: string) => {
-  const allFields = [
-    ...ORGANSIATIONFIELDS,
-    ...ORGANISATIONSTATISTICSFIELDS,
-    ...SCHOOLFIELDS,
-    ...OFFERFIELDS,
-    ...OUTPUTFIELDS
-  ];
-  const field = allFields.find(f => f.value === key);
-  return field ? field.label : key.charAt(0).toUpperCase() + key.slice(1);
+export const getFieldLabelFromConfig = (
+  config: ReportConfig,
+  entityType: string,
+  fieldValue: string
+) => {
+  const fields = config.fieldsByEntity?.[entityType] ?? [];
+  const field = fields.find(entry => entry.value === fieldValue);
+  return field ? field.label : fieldValue;
 };
 
 export const handleExport = (
   reportContent: any[] | null | undefined,
   report: Report | null | undefined,
-  displayFields: DisplayField[] | MetaDisplayFields
+  displayFields: DisplayField[] | MetaDisplayFields,
+  config: ReportConfig
 ) => {
   if (!reportContent || reportContent.length === 0) {
     console.error("Keine Daten zum Exportieren vorhanden");
@@ -244,8 +236,7 @@ export const handleExport = (
     .sort((a, b) => a.order - b.order);
 
   const headers = sortedDisplayFields.map(field => {
-    const key = `${field.type}_${field.field}`;
-    return getFieldLabel(key);
+    return getFieldLabelFromConfig(config, field.type, field.field);
   });
 
   const csvContent = [

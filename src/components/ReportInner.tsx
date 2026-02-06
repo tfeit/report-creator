@@ -29,7 +29,7 @@ const PopupChangeData = lazy(() => import("./PopupChangeData"));
 const PopupChangeFields = lazy(() => import("./PopupChangeFields"));
 
 export default function ReportInner() {
-  const { report, refetch, refetchContent, reportContent, displayFields, filters } = useReport();
+  const { report, refetch, refetchContent, reportContent, displayFields, filters, config } = useReport();
   const { handleGroupByColumn, handleSortByColumn } = useReportOperations();
   
   const [showFilters, setShowFilters] = useState(false);
@@ -86,7 +86,7 @@ export default function ReportInner() {
   }, [showFilters, showSort, showAggregation]);
 
   const handleExportClick = () => {
-    handleExport(reportContent, report, displayFields);
+    handleExport(reportContent, report, displayFields, config);
   };
 
   const actions = [

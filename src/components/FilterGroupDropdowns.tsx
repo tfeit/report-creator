@@ -1,6 +1,6 @@
 import { ChevronDownIcon, ChevronUpIcon, TrashIcon } from "@heroicons/react/24/outline";
 import Input from "./ui/Input";
-import { Filter } from "../types";
+import { Filter, ReportConfig } from "../types";
 import FilterArrayField from "./FilterArrayField";
 import FilterDateField from "./FilterDateField";
 import FilterNumberField from "./FilterNumberField";
@@ -22,6 +22,7 @@ type FilterGroupDropdownsProps = {
   onRemoveFilter: (filterIndex: number) => void;
   onUpdateFilterOperator: (filterIndex: number, operator: string) => void;
   onUpdateFilterValue: (filterIndex: number, value: string) => void;
+  config: ReportConfig;
 };
 
 export default function FilterGroupDropdowns({
@@ -32,12 +33,13 @@ export default function FilterGroupDropdowns({
   onRemoveFilter,
   onUpdateFilterOperator,
   onUpdateFilterValue,
+  config
 }: FilterGroupDropdownsProps) {
   return (
     <>
       {filters.map((filter: Filter, filterIndex: number) => {
           const filterKey = `${filterIndex}`;
-          const fieldDataType = getFieldDataType(filter.field);
+          const fieldDataType = getFieldDataType(filter.field, config);
           const isArrayField = fieldDataType === "array";
           const isArrayEmptyOperator =
             filter.operator === "array_is_empty" || filter.operator === "array_is_not_empty";
@@ -49,7 +51,7 @@ export default function FilterGroupDropdowns({
           return (
             <div key={filterKey} className="relative">
               <SettingButton
-                dropdownLabel={getFieldLabelForFilter(filter.field)}
+                dropdownLabel={getFieldLabelForFilter(filter.field, config)}
                 action={activeDropdown === filterKey}
                 setAction={() => toggleDropdown(filterKey)}
                 icon={activeDropdown === filterKey ? ChevronUpIcon : ChevronDownIcon}
@@ -60,7 +62,7 @@ export default function FilterGroupDropdowns({
                     <div className="flex justify-between items-center gap-2 w-full">
                       <div className="flex items-center gap-2 shrink-0">
                         <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {getFieldOriginForFilter(filter.field)}
+                          {getFieldOriginForFilter(filter.field, config)}
                         </div>
                         <select
                           name={`filter_${filterIndex}_operator`}
@@ -69,7 +71,7 @@ export default function FilterGroupDropdowns({
                             onUpdateFilterOperator(filterIndex, e.target.value)
                           }
                         >
-                          {getOperatorOptionsForField(filter.field).map(option => (
+                          {getOperatorOptionsForField(filter.field, config).map(option => (
                             <option key={option.value} value={option.value}>
                               {option.label}
                             </option>
@@ -126,7 +128,7 @@ export default function FilterGroupDropdowns({
                     ) : (
                       <Input
                         name={`filter_${filterIndex}_value`}
-                        type={getInputTypeForField(filter.field)}
+                        type={getInputTypeForField(filter.field, config)}
                         value={String(filter.value)}
                         onChange={e =>
                           onUpdateFilterValue(filterIndex, e.target.value)

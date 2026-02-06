@@ -74,11 +74,11 @@ const buildSortingPayload = (fields: MetaDisplayFields): Sorting[] => {
 };
 
 export default function ReportSort() {
-  const { displayFields, setDisplayFields, refetch, callbacks } = useReport();
+  const { displayFields, setDisplayFields, refetch, callbacks, config } = useReport();
   const [activeDropdown, setActiveDropdown] = useState(false);
   const availableFields = useMemo(
-    () => getAvailableFieldsForReport(displayFields),
-    [displayFields]
+    () => getAvailableFieldsForReport(displayFields, config),
+    [displayFields, config]
   );
   const sortRules = useMemo(
     () => buildSortRules(displayFields),

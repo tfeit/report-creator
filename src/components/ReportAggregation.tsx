@@ -37,12 +37,12 @@ const sortAndReindexFields = (
 };
 
 export default function ReportAggregation() {
-  const { displayFields, setDisplayFields, refetch, callbacks } = useReport();
+  const { displayFields, setDisplayFields, refetch, callbacks, config } = useReport();
   const [activeDropdown, setActiveDropdown] = useState(false);
 
   const availableFields = useMemo(
-    () => getAvailableFieldsForReport(displayFields),
-    [displayFields]
+    () => getAvailableFieldsForReport(displayFields, config),
+    [displayFields, config]
   );
   const groupedFields = useMemo(
     () => displayFields.filter(field => field.grouping).sort((a, b) => a.order - b.order),
