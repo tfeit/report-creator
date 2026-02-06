@@ -1,0 +1,472 @@
+@import "tailwindcss";
+
+:root {
+  --background: #FAF5EC;
+  --foreground: #171717;  
+  --background-main: #ffffff;
+  --color-darkblue: #075163;
+  --color-blue: #0E7490;
+  --color-sand: #f3dfbf;
+  --color-yellow: #FFA500;
+  --color-green: #007849;
+  --color-red: #DC143C;
+  --lrr-text-color: #3f3f3f;
+  --lrr-heading-color: #212121;
+  --lrr-description-color: #7f7f7f;
+  --lrr-item-border-color: #E7E9EC;
+  --lrr-item-background-color: #fff;
+  --lrr-page-background-color: #FAF5EC;
+  --lrr-page-background-color-new: rgb(243 223 191 / 0.3);
+  --lrr-header-color: var(--color-blue);
+
+  --lrr-blue-100: oklch(0.93 0.05 223);
+  --lrr-blue-200: oklch(0.85 0.07 223);
+  --lrr-blue-300: oklch(0.73 0.1 223);
+  --lrr-blue-400: oklch(0.6 0.1 223);
+  --lrr-blue-500: oklch(0.55 0.09 223);
+  --lrr-blue-600: oklch(0.47 0.09 223);
+  --lrr-blue-700: oklch(0.42 0.09 223);
+  --lrr-blue-800: oklch(0.35 0.09 223);
+  --lrr-blue-900: oklch(0.29 0.07 223);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #111827;
+    --foreground: #ededed;
+    --background-main: rgba(41, 47, 61, 1);
+    --lrr-item-background-color: rgba(255, 255, 255, 0.08);
+    --lrr-item-border-color: rgba(255, 255, 255, 0.15);
+    --lrr-text-color: #e6e6e6;
+    --lrr-description-color: #bababa;
+    --lrr-heading-color: #fff;
+    --lrr-page-background-color: #111827;
+    --lrr-header-color: rgb(17 24 39);
+  }
+}
+
+/* Button */
+button.button--outlined.button--transparent:hover {
+  color: var(--color-blue);
+}
+
+button.button--outlined.button--transparent.selected {
+  color: var(--color-blue);
+}
+
+/* Icon Checkbox */
+.icon-checkbox {
+  display: flex;
+  width: 100%;
+  height: 4rem;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1;
+  cursor: pointer;
+  border: 1px solid #e5e7eb;
+  background-color: transparent;
+}
+
+.icon-checkbox--checked {
+  background-color: #ffffff;
+  border-color: var(--color-blue);
+}
+
+.icon-checkbox--disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.icon-checkbox__input {
+  display: none;
+}
+
+.icon-checkbox__content {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  color: #374151;
+}
+
+.icon-checkbox__content--row {
+  flex-direction: row;
+}
+
+.icon-checkbox__content--top {
+  flex-direction: column;
+  justify-content: center;
+}
+
+.icon-checkbox__content--checked {
+  color: var(--color-blue);
+}
+
+.icon-checkbox__label {
+  line-height: 1;
+}
+
+.icon-checkbox__label--regular {
+  font-weight: 400;
+}
+
+.icon-checkbox__label--medium {
+  font-weight: 500;
+}
+
+.icon-checkbox__label--bold {
+  font-weight: 700;
+}
+
+.icon-checkbox__description {
+  font-size: 0.75rem;
+  padding: 0.5rem 0;
+  color: #374151;
+}
+
+.icon-checkbox__description--checked {
+  color: var(--color-blue);
+}
+
+@media (prefers-color-scheme: dark) {
+  .icon-checkbox {
+    border-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .icon-checkbox--checked {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .icon-checkbox__content {
+    color: #ffffff;
+  }
+
+  .icon-checkbox__content--checked {
+    color: #ffffff;
+  }
+
+  .icon-checkbox__description {
+    color: #ffffff;
+  }
+
+  .icon-checkbox__description--checked {
+    color: #ffffff;
+  }
+}
+
+/* Report Title */
+.report-title-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0.25rem;
+  border-bottom: 1px solid #4a5565;
+  max-width: 100%;
+  z-index: 50;
+}
+
+@media (prefers-color-scheme: dark) {
+  .report-title-wrapper {
+    border-bottom: 1px solid #99a1af;
+  }
+}
+
+.report-title-wrapper .title {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.report-title-wrapper .actions {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.report-title-wrapper .title input {
+  width: 100%;
+  border-bottom: 1px solid #4a5565;
+  outline: none;
+  font-size: 1.5rem;
+  font-weight: 600;
+  background-color: transparent;
+}
+
+.report-title-wrapper .title h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+@media screen and (max-width: 768px) {
+  .report-title-wrapper .title input {
+    font-size: 1.25rem;
+  }
+
+  .report-title-wrapper .title h2 {
+    font-size: 1.25rem;
+  }
+
+  .report-title-wrapper .actions {
+    gap: 0.5rem;
+  }
+}
+
+/* Report Popup */
+.report-popup-background {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+  position: fixed;
+  z-index: 999;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+.report-popup-background.popup-bg {
+  opacity: 0;
+  transition: all 0.3s ease-out;
+}
+
+.report-popup-background.popup-bg.popup-ready {
+  opacity: 1;
+}
+
+.report-popup-background.popup-bg.popup-removing {
+  opacity: 0;
+}
+
+.report-popup.popup {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out 0.25s,
+              transform 0.3s ease-in-out 0.25s;
+  transform: scale(0.8) translate(-50%, -50%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .report-popup.popup {
+      border: 1px solid var(--lrr-item-border-color);
+  }
+}
+
+.report-popup.popup.popup-ready {
+  opacity: 1;
+  transform: scale(1) translate(-50%, -50%);
+}
+
+.report-popup.popup.popup-removing {
+  transform: scale(0.8) translate(-50%, -50%);
+  opacity: 0;
+}
+
+.report-popup {
+  pointer-events: auto;
+}
+
+.report-popup {
+  margin: auto;
+  background-color: #fff;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  overflow: visible;
+  border-radius: 15px;
+  transition: height 1s cubic-bezier(0.4, 0, 0.2, 1),
+              max-height 1s cubic-bezier(0.4, 0, 0.2, 1),
+              min-height 1s cubic-bezier(0.4, 0, 0.2, 1),
+              width 1s cubic-bezier(0.4, 0, 0.2, 1),
+              max-width 1s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 1s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  .report-popup {
+      background-color: var(--lrr-page-background-color);
+  }
+}
+
+.report-popup-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 40rem;
+  padding-bottom: 1rem;
+  transition: height 1s cubic-bezier(0.4, 0, 0.2, 1),
+              max-height 1s cubic-bezier(0.4, 0, 0.2, 1),
+              min-height 1s cubic-bezier(0.4, 0, 0.2, 1),
+              width 1s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 1s cubic-bezier(0.4, 0, 0.2, 1),
+              gap 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.step-content {
+  position: relative;
+  transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.step-item {
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.5s;
+}
+
+.step-item:not(.active) {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 100%;
+  visibility: hidden;
+}
+
+.step-item.active {
+  opacity: 1;
+  position: relative;
+}
+
+.step-item.active.transitioning {
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.5s;
+}
+
+.report-popup .form-field {
+  margin: 20px 10px 30px;
+}
+
+@media screen and (max-width: 1024px ) {
+  .report-popup {
+      width: calc(100% - 40px);
+      max-width: calc(100% - 40px);
+  }
+  
+  .report-popup-content {
+    max-width: 100%;
+    overflow-x: scroll;
+  }
+
+}
+
+.padding-medium .popup-header-title,
+.padding-medium .report-popup-content {
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+.popup-header-title {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.popup-header-title h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  margin-block-start: 0;
+  margin-block-end: 0;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  max-width: 500px;
+}
+
+.popup-header-title svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.popup-header-title button {
+  border: none;
+  background-color: transparent;
+  padding: 3px;
+  color: var(--lrr-text-color) !important;
+}
+
+.popup-header-title button:hover {
+  border: none;
+  background-color: transparent;
+  color: var(--lrr-blue) !important;
+}
+
+.report-popup-content dt {
+  padding-right: 5px;
+}
+
+.report-popup-content input, 
+.report-popup-content textarea, 
+.report-popup-content select {
+  outline: none;
+  width: 100%;
+}
+
+.report-popup-content input[type=checkbox],
+.report-popup-content input[type=radio] {
+  width: 1rem;
+  height: 1rem;
+}
+
+.report-popup-content input[type=text]:read-only, 
+.report-popup-content input[type=number]:read-only, 
+.report-popup-content input[type=date]:read-only, 
+.report-popup-content textarea:read-only, 
+.report-popup-content select:disabled {
+  outline: none;
+  background-color: #ececec;
+  border: 1px solid #ececec;
+
+  @media (prefers-color-scheme: dark) {
+      background-color: var(--lrr-item-background-color);
+      border: 1px solid var(--lrr-item-border-color);
+  }
+}
+
+
+.report-popup-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 2rem;
+  padding: 1rem;
+}
+
+.report-popup-footer button {
+  padding: 0.375rem 1rem;
+  border-radius: 2.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 300;
+  font-size: 0.875rem;
+}
+
+.report-popup-footer button.button-back {
+  background-color: transparent;
+  border: 1px solid var(--color-blue);
+  color: var(--color-blue);
+}
+
+.report-popup-footer button.button-back:hover {
+  background-color: transparent;
+  color: var(--color-darkblue);
+  border: 1px solid var(--color-darkblue);
+}
+
+.report-popup-footer button.button-click {
+  background-color: var(--color-blue);
+  border: 1px solid var(--color-blue);
+  color: #fff;
+}
+
+.report-popup-footer button.button-click:hover {
+  background-color: var(--color-darkblue);
+  border: 1px solid var(--color-darkblue);
+  color: #fff;
+}
