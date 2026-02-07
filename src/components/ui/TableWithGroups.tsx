@@ -51,6 +51,7 @@ interface TableNewProps {
   setCurrentTab?: (tab: string) => void;
   displayFields: Field[];
   handleGroupByColumn: (columnId: string) => void;
+  handleRemoveField: (columnId: string) => void;
   config: ReportConfig;
 }
 
@@ -72,18 +73,20 @@ const TableWithGroups: React.FC<TableNewProps> = ({
   setCurrentTab,
   displayFields,
   handleGroupByColumn,
+  handleRemoveField,
   config
 }) => {
   const [sorting, setSorting] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<string | null>(enableTabs ? "active" : null);
 
-  const dataTypeByKey = React.useMemo(
-    () =>
-      new Map(
-        displayFields.map(field => [`${field.field}_${field.type}`, field.dataType])
-      ),
-    [displayFields]
-  );
+  const dataTypeByKey = React.useMemo(() => {
+    const entries: Array<[string, Field["dataType"]]> = [];
+    displayFields.forEach(field => {
+      entries.push([`${field.field}_${field.type}`, field.dataType]);
+      entries.push([`${field.type}_${field.field}`, field.dataType]);
+    });
+    return new Map(entries);
+  }, [displayFields]);
 
   const isArrayField = (fieldKey: string | undefined) =>
     fieldKey ? dataTypeByKey.get(fieldKey) === "array" : false;
@@ -173,8 +176,15 @@ const TableWithGroups: React.FC<TableNewProps> = ({
     } else if (action === "group") {
       const columnId = header.column.id;
       handleGroupByColumn(columnId);
+    } else if (action === "remove") {
+      const columnId = header.column.id;
+      handleRemoveField(columnId);
     }
   };
+
+  const resolveDisplayField = (columnId: string) =>
+    displayFields.find(field => `${field.type}_${field.field}` === columnId) ||
+    displayFields.find(field => `${field.field}_${field.type}` === columnId);
 
   return (
     <div className="max-w-full">
@@ -237,10 +247,15 @@ const TableWithGroups: React.FC<TableNewProps> = ({
                           },
                           {
                             type: "button",
-                            label: displayFields.find(field => `${field.field}_${field.type}` === header.column.id)?.grouping
+                            label: resolveDisplayField(header.column.id)?.grouping
                               ? "Gruppierung aufheben"
                               : "Nach Spalte gruppieren",
                             onClick: () => handleColumnAction(header, "group")
+                          },
+                          {
+                            type: "button",
+                            label: "Feld entfernen",
+                            onClick: () => handleColumnAction(header, "remove")
                           }
                         ]}
                         className="ml-2"
@@ -358,7 +373,6 @@ const TableWithGroups: React.FC<TableNewProps> = ({
                         return null;
                       }
 
-                      const isArray = isArrayField(groupKey || "");
                       const groupValue = (item as any)[`_groupValue_${groupKey}`];
 
                       return (
@@ -367,7 +381,7 @@ const TableWithGroups: React.FC<TableNewProps> = ({
                           rowSpan={(item as any)[`_groupSize_${groupKey}`]}
                           className={clsx("bg-gray-50 dark:bg-white/5")}
                         >
-                          {isArray && groupValue ? groupValue : flexRender(column.cell, { row: { original: item } })}
+                          {groupValue ?? flexRender(column.cell, { row: { original: item } })}
                         </TableCell>
                       );
                     }

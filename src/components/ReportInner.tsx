@@ -30,7 +30,7 @@ const PopupChangeFields = lazy(() => import("./PopupChangeFields"));
 
 export default function ReportInner() {
   const { report, refetch, refetchContent, reportContent, displayFields, filters, sorting, config } = useReport();
-  const { handleGroupByColumn, handleSortByColumn } = useReportOperations();
+  const { handleGroupByColumn, handleRemoveField, handleSortByColumn } = useReportOperations();
   
   const [showFilters, setShowFilters] = useState(false);
   const [showSort, setShowSort] = useState(false);
@@ -229,6 +229,7 @@ export default function ReportInner() {
         <div className="overflow-y-scroll">
           <ReportTable 
             handleGroupByColumn={handleGroupByColumn} 
+            handleRemoveField={handleRemoveField}
             handleSortByColumn={handleSortByColumn} 
             showChart={showChart}
           />

@@ -18,6 +18,7 @@ interface TableErrorBoundaryProps {
 interface ReportTableProps {
   showChart: boolean;
   handleGroupByColumn: (columnId: string) => void;
+  handleRemoveField: (columnId: string) => void;
   handleSortByColumn: (columnId: string, sortDirection: "asc" | "desc") => Promise<void>;
 }
 
@@ -94,7 +95,7 @@ const normalizeSortValue = (
     : String(value).toLowerCase();
 };
 
-function ReportTable({ handleGroupByColumn, handleSortByColumn, showChart }: ReportTableProps): React.ReactNode {
+function ReportTable({ handleGroupByColumn, handleRemoveField, handleSortByColumn, showChart }: ReportTableProps): React.ReactNode {
   const [selectedCooperations, setSelectedCooperations] = useState<any>(null);
   const { report, reportContent, loadingContent, displayFields, filters, sorting, config } = useReport();
 
@@ -342,7 +343,9 @@ function ReportTable({ handleGroupByColumn, handleSortByColumn, showChart }: Rep
         enableColumnFilter: false,
         grouping: displayField.grouping,
         cell: ({ row }: { row: { original: any } }) => {
-          const value = row.original[key];
+          const rawValue = row.original[key];
+          const value =
+            rawValue === undefined ? row.original[displayField.field] : rawValue;
           if (key === "cooperations") {
             return (
               <Button
@@ -391,6 +394,7 @@ function ReportTable({ handleGroupByColumn, handleSortByColumn, showChart }: Rep
           dense={true}
           noDataMessage={"Keine Einträge gefunden"}
           handleGroupByColumn={handleGroupByColumn}
+          handleRemoveField={handleRemoveField}
           displayFields={displayFields}
           config={config}
         />

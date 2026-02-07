@@ -6,27 +6,21 @@ type Grouped = {
   parent?: string;
 };
 
-const ARRAY_FIELDS = [
-  "handlungsfelder",
-  "sdgs",
-  "regionen",
-  "targetgroups",
-  "zielgruppen",
-  "evaluation",
-  "ikom",
-  "bildungsabschnitte"
-];
+function extractFieldValues(
+  item: any,
+  fieldName: string,
+  isArrayField: boolean,
+  fallbackFieldName?: string | null
+): string[] {
+  let value = item[fieldName];
+  if (value === undefined && fallbackFieldName) {
+    value = item[fallbackFieldName];
+  }
 
-function isArrayField(fieldName: string): boolean {
-  const fieldParts = fieldName.split("_");
-  const field = fieldParts[fieldParts.length - 1];
-  return ARRAY_FIELDS.includes(field);
-}
-
-function extractFieldValues(item: any, fieldName: string): string[] {
-  const value = item[fieldName];
-
-  if (Array.isArray(value)) {
+  if (isArrayField || Array.isArray(value)) {
+    if (!Array.isArray(value)) {
+      value = value === undefined || value === null ? [] : [value];
+    }
     return value.map(v => {
       if (typeof v === "object" && v !== null) {
         return v.label || v.name || v.id || String(v);
@@ -53,19 +47,36 @@ export function groupData(data: any[], displayFields: any[]): Grouped[] {
     return [{ group: "Ohne Gruppe", items: data, groupAggregate: null, isPrimaryGroup: true }];
   }
 
+  const arrayFieldKeys = new Set(
+    displayFields
+      .filter((field: any) => field.dataType === "array")
+      .flatMap((field: any) => [
+        `${field.type}_${field.field}`,
+        field.field
+      ])
+  );
+
   const primaryField = groupingFields[0];
   const secondaryField = groupingFields[1];
 
   const primaryFieldName = `${primaryField.type}_${primaryField.field}`;
   const secondaryFieldName = secondaryField ? `${secondaryField.type}_${secondaryField.field}` : null;
-  const isPrimaryArray = isArrayField(primaryFieldName);
-  const isSecondaryArray = secondaryFieldName ? isArrayField(secondaryFieldName) : false;
+  const primaryFallbackName = primaryFieldName.split("_").slice(1).join("_");
+  const secondaryFallbackName = secondaryFieldName
+    ? secondaryFieldName.split("_").slice(1).join("_")
+    : null;
+  const isPrimaryArray = arrayFieldKeys.has(primaryFieldName) || arrayFieldKeys.has(primaryFallbackName);
+  const isSecondaryArray = secondaryFieldName
+    ? arrayFieldKeys.has(secondaryFieldName) || arrayFieldKeys.has(secondaryFallbackName || "")
+    : false;
 
   const groups: { [key: string]: { [key: string]: any[] } } = {};
 
   data.forEach(item => {
-    const primaryValues = extractFieldValues(item, primaryFieldName);
-    const secondaryValues = secondaryFieldName ? extractFieldValues(item, secondaryFieldName) : [null];
+    const primaryValues = extractFieldValues(item, primaryFieldName, isPrimaryArray, primaryFallbackName);
+    const secondaryValues = secondaryFieldName
+      ? extractFieldValues(item, secondaryFieldName, isSecondaryArray, secondaryFallbackName)
+      : [null];
 
     primaryValues.forEach(primary => {
       if (!groups[primary]) groups[primary] = {};

@@ -3,10 +3,20 @@ import { useReport } from "./useReport";
 export const useReportOperations = () => {
   const { displayFields, setDisplayFields, sorting, setSorting, refetch, callbacks } = useReport();
 
+  const resolveFieldFromColumnId = (columnId: string) => {
+    const directMatch = displayFields.find(
+      field => `${field.type}_${field.field}` === columnId
+    );
+    if (directMatch) return directMatch;
+    return displayFields.find(
+      field => `${field.field}_${field.type}` === columnId
+    );
+  };
+
   const handleGroupByColumn = async (columnId: string) => {
-    const firstUnderscoreIndex = columnId.indexOf("_");
-    const field = columnId.substring(0, firstUnderscoreIndex);
-    const type = columnId.substring(firstUnderscoreIndex + 1);
+    const matchedField = resolveFieldFromColumnId(columnId);
+    if (!matchedField) return;
+    const { field, type } = matchedField;
 
     const updatedDisplayFields = displayFields.map(displayField => {
       if (displayField.field === field && displayField.type === type) {
@@ -38,6 +48,28 @@ export const useReportOperations = () => {
       }
     } catch (error) {
       console.error("Error updating fields:", error);
+    }
+  };
+
+  const handleRemoveField = async (columnId: string) => {
+    const matchedField = resolveFieldFromColumnId(columnId);
+    if (!matchedField) return;
+    const nextFields = displayFields
+      .filter(field => !(field.field === matchedField.field && field.type === matchedField.type))
+      .sort((a, b) => a.order - b.order)
+      .map((fieldItem, index) => ({
+        ...fieldItem,
+        order: index
+      }));
+
+    try {
+      const result = await callbacks.onUpdateFields(nextFields);
+      if (result) {
+        setDisplayFields(nextFields);
+        refetch();
+      }
+    } catch (error) {
+      console.error("Error removing field:", error);
     }
   };
 
@@ -96,6 +128,7 @@ export const useReportOperations = () => {
 
   return {
     handleGroupByColumn,
+    handleRemoveField,
     handleSortByColumn,
     handleReorderColumns
   };

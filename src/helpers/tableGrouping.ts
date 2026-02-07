@@ -15,9 +15,69 @@ export function groupDataRecursive<T extends Record<string, any>>(
   if (level >= groupingColumns.length) return data;
 
   const col = groupingColumns[level];
+  const groupValueKey = col.accessorKey;
+  const fallbackKey = groupValueKey.includes("_")
+    ? groupValueKey.split("_").slice(1).join("_")
+    : null;
+
+  const normalizeGroupValue = (value: any): string => {
+    if (value === null || value === undefined || String(value).trim() === "") {
+      return "Ohne Gruppe";
+    }
+    if (typeof value === "object") {
+      return value.label || value.name || value.id || String(value);
+    }
+    return String(value);
+  };
+
+  const expandDataForGrouping = (items: T[]): T[] => {
+    const expanded: T[] = [];
+
+    items.forEach(item => {
+      let rawValue = item[groupValueKey];
+      if (rawValue === undefined && fallbackKey) {
+        rawValue = item[fallbackKey];
+      }
+      if (rawValue === undefined) {
+        console.warn(
+          "[groupDataRecursive] Gruppierungsfeld nicht gefunden",
+          {
+            groupValueKey,
+            fallbackKey,
+            availableKeys: Object.keys(item)
+          }
+        );
+      }
+
+      if (Array.isArray(rawValue)) {
+        const values = rawValue.length > 0 ? rawValue : ["Ohne Gruppe"];
+        values.forEach(entry => {
+          const normalized = normalizeGroupValue(entry);
+          expanded.push({
+            ...item,
+            [groupValueKey]: normalized,
+            [`_groupValue_${groupValueKey}`]: normalized
+          });
+        });
+        return;
+      }
+
+      const normalized = normalizeGroupValue(rawValue);
+      expanded.push({
+        ...item,
+        [groupValueKey]:
+          rawValue === undefined && fallbackKey ? normalized : item[groupValueKey],
+        [`_groupValue_${groupValueKey}`]: normalized
+      });
+    });
+
+    return expanded;
+  };
   const groups: Record<string, T[]> = {};
 
-  data.forEach(item => {
+  const groupingData = expandDataForGrouping(data);
+
+  groupingData.forEach(item => {
     const key = item[col.accessorKey];
     if (!groups[key]) groups[key] = [];
     groups[key].push(item);
