@@ -1,4 +1,4 @@
-import { DisplayField, MetaDisplayFields, Report, ReportConfig } from "../types";
+import { Field, Report, ReportConfig } from "../types";
 
 export const transformOrganisationData = (data: any) => {
   if (!data) return data;
@@ -221,7 +221,7 @@ export const getFieldLabelFromConfig = (
 export const handleExport = (
   reportContent: any[] | null | undefined,
   report: Report | null | undefined,
-  displayFields: DisplayField[] | MetaDisplayFields,
+  displayFields: Field[],
   config: ReportConfig
 ) => {
   if (!reportContent || reportContent.length === 0) {

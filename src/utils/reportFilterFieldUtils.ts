@@ -1,4 +1,4 @@
-import { DisplayField, Filter, MetaDisplayFields, ReportConfig } from "../types";
+import { Field, Filter, ReportConfig } from "../types";
 
 const formatEntityLabel = (entityType: string) =>
   entityType
@@ -61,7 +61,7 @@ export const getFieldOriginForFilter = (fieldValue: string, config: ReportConfig
 };
 
 export const getAvailableFieldsForReport = (
-  displayFields: DisplayField[] | MetaDisplayFields | undefined,
+  displayFields: Field[] | undefined,
   config: ReportConfig
 ) => {
   const availableFields = buildAvailableFields(config);

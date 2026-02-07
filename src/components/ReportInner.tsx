@@ -29,7 +29,7 @@ const PopupChangeData = lazy(() => import("./PopupChangeData"));
 const PopupChangeFields = lazy(() => import("./PopupChangeFields"));
 
 export default function ReportInner() {
-  const { report, refetch, refetchContent, reportContent, displayFields, filters, config } = useReport();
+  const { report, refetch, refetchContent, reportContent, displayFields, filters, sorting, config } = useReport();
   const { handleGroupByColumn, handleSortByColumn } = useReportOperations();
   
   const [showFilters, setShowFilters] = useState(false);
@@ -46,15 +46,22 @@ export default function ReportInner() {
   const [showPopupTitle, setShowPopupTitle] = useState(false);
   const [showPopupDelete, setShowPopupDelete] = useState(false);
 
-  const hasActiveSort = useMemo(
-    () => displayFields.some(field => Boolean(field.sort)),
-    [displayFields]
-  );
+  const hasActiveSort = useMemo(() => sorting.length > 0, [sorting]);
   const hasActiveAggregation = useMemo(
     () => displayFields.some(field => Boolean(field.grouping)),
     [displayFields]
   );
   const hasActiveFilters = useMemo(() => filters.length > 0, [filters]);
+
+  const handleToggleSettings = (target: "filters" | "sort" | "aggregation") => {
+    const nextShowFilters = target === "filters" ? !showFilters : false;
+    const nextShowSort = target === "sort" ? !showSort : false;
+    const nextShowAggregation = target === "aggregation" ? !showAggregation : false;
+
+    setShowFilters(nextShowFilters);
+    setShowSort(nextShowSort);
+    setShowAggregation(nextShowAggregation);
+  };
 
   useEffect(() => {
     const transitionMs = 300;
@@ -139,7 +146,7 @@ export default function ReportInner() {
           <div className="actions">
             <button
               title="Filter"
-              onClick={() => setShowFilters(!showFilters)}
+              onClick={() => handleToggleSettings("filters")}
               className={`${showFilters || hasActiveFilters ? "action selected" : "action"}`}
             >
               <FunnelIcon className="w-5 h-5" />
@@ -147,7 +154,7 @@ export default function ReportInner() {
             
             <button
               title="Sortierung"
-              onClick={() => setShowSort(!showSort)}
+              onClick={() => handleToggleSettings("sort")}
               className={`${showSort || hasActiveSort ? "action selected" : "action"}`}
             >
               <ArrowsUpDownIcon className="w-5 h-5" />
@@ -155,7 +162,7 @@ export default function ReportInner() {
             
             <button
               title="Gruppierung"
-              onClick={() => setShowAggregation(!showAggregation)}
+              onClick={() => handleToggleSettings("aggregation")}
               className={`${showAggregation || hasActiveAggregation ? "action selected" : "action"}`}
             >
               <Squares2X2Icon className="w-5 h-5" />

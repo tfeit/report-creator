@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Popup from "./ui/Popup";
 import FieldSelector from "./FieldSelector";
-import { DisplayField, MetaDisplayFields } from "../types";
+import { Field } from "../types";
 import { useReport } from "../hooks/useReport";
 
 export default function PopupChangeFields({ setShowPopup }: { setShowPopup: (show: boolean) => void }) {
@@ -14,15 +14,15 @@ export default function PopupChangeFields({ setShowPopup }: { setShowPopup: (sho
     config
   } = useReport();
 
-  const [displayFields, setDisplayFields] = useState<DisplayField[]>(() => {
-    return contextDisplayFields as unknown as DisplayField[] || [];
+  const [displayFields, setDisplayFields] = useState<Field[]>(() => {
+    return contextDisplayFields || [];
   });
 
   const handleSubmit = async () => {
-    const success = await callbacks.onUpdateFields(displayFields as unknown as MetaDisplayFields);
+    const success = await callbacks.onUpdateFields(displayFields);
 
     if (success) {
-      setContextDisplayFields(displayFields as unknown as MetaDisplayFields);
+      setContextDisplayFields(displayFields);
       setShowPopup(false);
       refetch();
     }
@@ -48,8 +48,8 @@ export default function PopupChangeFields({ setShowPopup }: { setShowPopup: (sho
           key={type}
           type={type}
           reportType={report?.type || ""}
-          displayFields={displayFields as unknown as MetaDisplayFields}
-          onDisplayFieldsChange={setDisplayFields as unknown as (newFields: MetaDisplayFields) => void}
+          displayFields={displayFields}
+          onDisplayFieldsChange={setDisplayFields}
           placeholder="Felder auswählen"
           config={config}
         />

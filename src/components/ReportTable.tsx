@@ -4,7 +4,7 @@ import Popup from "./ui/Popup";
 import TableWithGroups from "./ui/TableWithGroups";
 import ReportChartWrapper from "./ReportChartWrapper";
 import { getFieldLabelFromConfig, getTransformedReportContent } from "../utils/utils";
-import { Filter, MetaDisplayFields, Report as ReportType } from "../types";
+import { Filter, Report as ReportType } from "../types";
 import { useReport } from "../hooks/useReport";
 
 interface TableErrorBoundaryState {
@@ -96,7 +96,7 @@ const normalizeSortValue = (
 
 function ReportTable({ handleGroupByColumn, handleSortByColumn, showChart }: ReportTableProps): React.ReactNode {
   const [selectedCooperations, setSelectedCooperations] = useState<any>(null);
-  const { report, reportContent, loadingContent, displayFields, filters, config } = useReport();
+  const { report, reportContent, loadingContent, displayFields, filters, sorting, config } = useReport();
 
   const hasGrouping = displayFields.some(field => field.grouping);
   const reportType = report?.type;
@@ -277,15 +277,18 @@ function ReportTable({ handleGroupByColumn, handleSortByColumn, showChart }: Rep
       );
     }
 
-    const sortRules = displayFields
-      .filter(field => field.sort)
-      .map(field => ({
-        accessorKey: `${field.type}_${field.field}`,
-        direction: field.sort as "asc" | "desc",
-        dataType: field.dataType,
-        sortOrder: field.sortOrder ?? field.order ?? 0
-      }))
-      .sort((a, b) => a.sortOrder - b.sortOrder);
+    const fieldTypeByKey = new Map(
+      displayFields.map(field => [`${field.type}_${field.field}`, field])
+    );
+    const sortRules = sorting
+      .slice()
+      .sort((a, b) => a.order - b.order)
+      .map(rule => ({
+        accessorKey: rule.field,
+        direction: rule.direction,
+        dataType: fieldTypeByKey.get(rule.field)?.dataType,
+        sortOrder: rule.order
+      }));
 
     if (sortRules.length > 0) {
       data = [...data].sort((left, right) => {
@@ -315,7 +318,7 @@ function ReportTable({ handleGroupByColumn, handleSortByColumn, showChart }: Rep
     }
 
     return data;
-  }, [reportContent, reportType, filters, displayFields]);
+  }, [reportContent, reportType, filters, displayFields, sorting]);
 
   if (loadingContent || !reportContent || reportContent.length === 0) {
     return <div>Lade Daten...</div>;
@@ -388,7 +391,7 @@ function ReportTable({ handleGroupByColumn, handleSortByColumn, showChart }: Rep
           dense={true}
           noDataMessage={"Keine Einträge gefunden"}
           handleGroupByColumn={handleGroupByColumn}
-          displayFields={displayFields as MetaDisplayFields}
+          displayFields={displayFields}
           config={config}
         />
       </div>

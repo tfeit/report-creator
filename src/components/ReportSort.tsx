@@ -4,139 +4,68 @@ import { ChevronDownIcon, ChevronUpIcon, PlusIcon, TrashIcon } from "@heroicons/
 import { useMemo, useState } from "react";
 import { useReport } from "../hooks/useReport";
 import { getAvailableFieldsForReport } from "../utils/reportFiltersUtils";
-import { MetaDisplayFields, Sorting } from "../types";
+import { Sorting } from "../types";
 import SettingButton from "./ui/SettingButton";
 
 type SortDirection = "asc" | "desc";
-
-type SortRule = {
-  fieldValue: string;
-  direction: SortDirection;
-  sortOrder: number;
-};
 
 const DIRECTION_OPTIONS: Array<{ value: SortDirection; label: string }> = [
   { value: "asc", label: "Aufsteigend" },
   { value: "desc", label: "Absteigend" }
 ];
 
-const buildSortRules = (fields: MetaDisplayFields): SortRule[] =>
-  fields
-    .filter(field => field.sort)
-    .map((field, index) => ({
-      fieldValue: `${field.type}_${field.field}`,
-      direction: field.sort as SortDirection,
-      sortOrder:
-        typeof field.sortOrder === "number"
-          ? field.sortOrder
-          : typeof field.order === "number"
-            ? field.order
-            : index
-    }))
-    .sort((a, b) => a.sortOrder - b.sortOrder);
-
-const reindexSortOrders = (fields: MetaDisplayFields): MetaDisplayFields => {
-  const sorted = fields
-    .filter(field => field.sort)
+const normalizeSorting = (rules: Sorting[]): Sorting[] =>
+  rules
     .slice()
-    .sort(
-      (a, b) =>
-        (a.sortOrder ?? a.order ?? 0) - (b.sortOrder ?? b.order ?? 0)
-    );
-  const orderMap = new Map(
-    sorted.map((field, index) => [`${field.type}_${field.field}`, index])
-  );
-
-  return fields.map(field => {
-    if (!field.sort) {
-      return { ...field, sortOrder: undefined };
-    }
-    const key = `${field.type}_${field.field}`;
-    const nextOrder = orderMap.get(key);
-    return { ...field, sortOrder: nextOrder };
-  });
-};
-
-const buildSortingPayload = (fields: MetaDisplayFields): Sorting[] => {
-  const sorted = fields
-    .filter(field => field.sort)
-    .slice()
-    .sort(
-      (a, b) =>
-        (a.sortOrder ?? a.order ?? 0) - (b.sortOrder ?? b.order ?? 0)
-    );
-
-  return sorted.map((field, index) => ({
-    field: `${field.type}_${field.field}`,
-    direction: field.sort as SortDirection,
-    order: index
-  }));
-};
+    .sort((a, b) => a.order - b.order)
+    .map((rule, index) => ({ ...rule, order: index }));
 
 export default function ReportSort() {
-  const { displayFields, setDisplayFields, refetch, callbacks, config } = useReport();
+  const { displayFields, sorting, setSorting, refetch, callbacks, config } = useReport();
   const [activeDropdown, setActiveDropdown] = useState(false);
   const availableFields = useMemo(
     () => getAvailableFieldsForReport(displayFields, config),
     [displayFields, config]
   );
   const sortRules = useMemo(
-    () => buildSortRules(displayFields),
-    [displayFields]
+    () => sorting.slice().sort((a, b) => a.order - b.order),
+    [sorting]
   );
   const fieldLabelMap = useMemo(
     () => new Map(availableFields.map(field => [field.value, field.label])),
     [availableFields]
   );
 
-  const applySortUpdate = async (nextFields: MetaDisplayFields) => {
-    const normalizedSorting = buildSortingPayload(nextFields);
+  const applySortUpdate = async (nextSorting: Sorting[]) => {
+    const normalizedSorting = normalizeSorting(nextSorting);
     const sortingSuccess = await callbacks.onUpdateSorting(normalizedSorting);
-    const fieldsSuccess = await callbacks.onUpdateFields(nextFields);
-    if (sortingSuccess && fieldsSuccess) {
-      setDisplayFields(nextFields);
+    if (sortingSuccess) {
+      setSorting(normalizedSorting);
       refetch();
     }
   };
 
   const handleAddSort = async () => {
-    const used = new Set(sortRules.map(rule => rule.fieldValue));
+    const used = new Set(sortRules.map(rule => rule.field));
     const nextField = availableFields.find(field => !used.has(field.value));
     if (!nextField) return;
 
-    const updatedFields = displayFields.map(field => {
-      const fieldValue = `${field.type}_${field.field}`;
-      if (fieldValue === nextField.value) {
-        return {
-          ...field,
-          sort: "asc" as SortDirection,
-          sortOrder: sortRules.length
-        };
+    await applySortUpdate([
+      ...sortRules,
+      {
+        field: nextField.value,
+        direction: "asc",
+        order: sortRules.length
       }
-      return field;
-    });
-
-    await applySortUpdate(reindexSortOrders(updatedFields));
+    ]);
   };
 
   const handleClearSort = async () => {
-    const updatedFields = displayFields.map(field => ({
-      ...field,
-      sort: undefined,
-      sortOrder: undefined
-    }));
-    await applySortUpdate(updatedFields);
+    await applySortUpdate([]);
   };
 
   const handleRemoveSort = async (fieldValue: string) => {
-    const updatedFields = displayFields.map(field => {
-      const currentValue = `${field.type}_${field.field}`;
-      if (currentValue === fieldValue) {
-        return { ...field, sort: undefined, sortOrder: undefined };
-      }
-      return field;
-    });
-    await applySortUpdate(reindexSortOrders(updatedFields));
+    await applySortUpdate(sortRules.filter(rule => rule.field !== fieldValue));
   };
 
   const handleUpdateField = async (
@@ -144,46 +73,32 @@ export default function ReportSort() {
     nextValue: string
   ) => {
     if (currentValue === nextValue) return;
-    const currentRule = sortRules.find(rule => rule.fieldValue === currentValue);
+    const currentRule = sortRules.find(rule => rule.field === currentValue);
     if (!currentRule) return;
 
-    const updatedFields = displayFields.map(field => {
-      const fieldValue = `${field.type}_${field.field}`;
-      if (fieldValue === currentValue) {
-        return { ...field, sort: undefined, sortOrder: undefined };
-      }
-      if (fieldValue === nextValue) {
-        return {
-          ...field,
-          sort: currentRule.direction,
-          sortOrder: currentRule.sortOrder
-        };
-      }
-      return field;
-    });
-
-    await applySortUpdate(reindexSortOrders(updatedFields));
+    const updatedSorting = sortRules.map(rule =>
+      rule.field === currentValue
+        ? { ...rule, field: nextValue }
+        : rule
+    );
+    await applySortUpdate(updatedSorting);
   };
 
   const handleUpdateDirection = async (
     fieldValue: string,
     direction: SortDirection
   ) => {
-    const updatedFields = displayFields.map(field => {
-      const currentValue = `${field.type}_${field.field}`;
-      if (currentValue === fieldValue) {
-        return { ...field, sort: direction };
-      }
-      return field;
-    });
-    await applySortUpdate(updatedFields);
+    const updatedSorting = sortRules.map(rule =>
+      rule.field === fieldValue ? { ...rule, direction } : rule
+    );
+    await applySortUpdate(updatedSorting);
   };
 
   const dropdownLabel =
     sortRules.length === 0
       ? "Sortierung"
       : sortRules.length === 1
-        ? fieldLabelMap.get(sortRules[0].fieldValue) ?? "Sortierung"
+        ? fieldLabelMap.get(sortRules[0].field) ?? "Sortierung"
         : `${sortRules.length} Sortierungen`;
 
   return (
@@ -202,15 +117,15 @@ export default function ReportSort() {
               {sortRules.map(rule => {
                 const disabledValues = new Set(
                   sortRules
-                    .filter(entry => entry.fieldValue !== rule.fieldValue)
-                    .map(entry => entry.fieldValue)
+                    .filter(entry => entry.field !== rule.field)
+                    .map(entry => entry.field)
                 );
                 return (
-                  <div key={rule.fieldValue} className="flex items-center gap-2">
+                  <div key={rule.field} className="flex items-center gap-2">
                     <select
-                      value={rule.fieldValue}
+                      value={rule.field}
                       onChange={event =>
-                        handleUpdateField(rule.fieldValue, event.target.value)
+                        handleUpdateField(rule.field, event.target.value)
                       }
                     >
                       {availableFields.map(field => (
@@ -228,7 +143,7 @@ export default function ReportSort() {
                       value={rule.direction}
                       onChange={event =>
                         handleUpdateDirection(
-                          rule.fieldValue,
+                          rule.field,
                           event.target.value as SortDirection
                         )
                       }
@@ -242,7 +157,7 @@ export default function ReportSort() {
 
                     <button
                       type="button"
-                      onClick={() => handleRemoveSort(rule.fieldValue)}
+                      onClick={() => handleRemoveSort(rule.field)}
                       className="text-red-500 hover:text-red-700 ml-auto"
                     >
                       <TrashIcon className="w-4 h-4" />

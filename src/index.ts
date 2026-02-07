@@ -10,9 +10,10 @@ export type {
   ReportEntityType,
   ReportFieldConfig,
   FieldDataType,
-  DisplayField,
+  ReportDataSource,
+  ReportDataSourceOption,
+  ReportDataSourceSelection,
   Filter,
-  MetaDisplayFields,
-  WorkspaceCollection,
-  WorkspaceListing
+  Field,
+  Sorting
 } from "./types";

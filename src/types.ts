@@ -1,13 +1,3 @@
-export interface WorkspaceCollection {
-  uuid: string;
-  title: string;
-}
-
-export interface WorkspaceListing {
-  listingId: string;
-  name: string;
-}
-
 export interface Filter {
   field: string;
   operator: string;
@@ -22,31 +12,17 @@ export interface Sorting {
 
 export type FieldDataType = "number" | "string" | "boolean" | "date" | "array" | "float";
 
-export interface DisplayField {
+export interface Field {
   field: string;
   type: string;
-  visible: boolean;
-  order: number;
-  width?: string;
-  dataType?: FieldDataType;
-  grouping?: boolean;
-  aggregation?: "none" | "sum" | "average" | "count" | "min" | "max";
-  sort?: "asc" | "desc";
-  sortOrder?: number;
-}
-
-export type MetaDisplayFields = Array<{
-  field: string;
-  type: string;
-  dataType: FieldDataType;
   visible: boolean;
   order: number;
   width?: number;
+  dataType?: FieldDataType;
   grouping?: boolean;
   aggregation?: "none" | "sum" | "average" | "count" | "min" | "max";
-  sort?: "asc" | "desc";
-  sortOrder?: number;
-}>;
+}
+
 
 export interface MetaGrouping {
   field: string;
@@ -62,7 +38,7 @@ export interface Report {
   id?: string;
   type: string;
   title?: string;
-  fields?: DisplayField[];
+  fields?: Field[];
   chart?: string;
   conditions?: string | unknown;
   meta?: {
@@ -84,17 +60,31 @@ export interface ReportConfig {
   reportTypeEntities: Record<string, ReportEntityType[]>;
 }
 
+export interface ReportDataSourceOption {
+  value: string;
+  label: string;
+}
+
+export type ReportDataSourceSelection = "single" | "multi";
+
+export interface ReportDataSource {
+  id: string;
+  label: string;
+  selection: ReportDataSourceSelection;
+  conditionKey: string;
+  options: ReportDataSourceOption[];
+}
+
 export interface ReportPageData {
   report?: Report | null;
   reportContent?: any[] | null;
-  displayFields?: MetaDisplayFields;
+  displayFields?: Field[];
   filters?: Filter[];
   sorting?: Sorting[];
   chart?: string;
   loading?: boolean;
   loadingContent?: boolean;
-  workspaceCollections?: WorkspaceCollection[];
-  workspaceListings?: WorkspaceListing[];
+  dataSources?: ReportDataSource[];
   config: ReportConfig;
 }
 
@@ -103,10 +93,10 @@ export interface ReportCallbacks {
   onRefetchContent?: () => void;
   onUpdateTitle: (title: string) => Promise<boolean> | boolean;
   onUpdateConditions: (conditions: string) => Promise<boolean> | boolean;
-  onUpdateFields: (fields: MetaDisplayFields) => Promise<boolean> | boolean;
+  onUpdateFields: (fields: Field[]) => Promise<boolean> | boolean;
   onUpdateFilters: (filters: Filter[]) => Promise<boolean> | boolean;
   onUpdateSorting: (sorting: Sorting[]) => Promise<boolean> | boolean;
-  onUpdateChart: (chart: string, fields: MetaDisplayFields) => Promise<boolean> | boolean;
+  onUpdateChart: (chart: string, fields: Field[]) => Promise<boolean> | boolean;
   onDelete: () => Promise<boolean> | boolean;
   onNavigateBack?: () => void;
 }

@@ -1,11 +1,11 @@
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { FieldDataType, MetaDisplayFields, ReportConfig, ReportFieldConfig } from "../types";
+import { Field, FieldDataType, ReportConfig, ReportFieldConfig } from "../types";
 
 type FieldType = string;
 
 interface FieldConfig {
   available: ReportFieldConfig[];
-  current: MetaDisplayFields;
+  current: Field[];
   fieldName: string;
   title: string;
 }
@@ -13,8 +13,8 @@ interface FieldConfig {
 interface FieldSelectorProps {
   type: FieldType;
   reportType: string;
-  displayFields: MetaDisplayFields;
-  onDisplayFieldsChange: (newFields: MetaDisplayFields) => void;
+  displayFields: Field[];
+  onDisplayFieldsChange: (newFields: Field[]) => void;
   placeholder?: string;
   config: ReportConfig;
 }

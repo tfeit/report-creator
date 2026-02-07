@@ -3,30 +3,31 @@
 import { createContext, ReactNode, useEffect, useMemo, useState } from "react";
 import {
   Filter,
-  MetaDisplayFields,
+  Field,
   Report,
   ReportCallbacks,
   ReportConfig,
   ReportPageData,
-  WorkspaceCollection,
-  WorkspaceListing
+  ReportDataSource,
+  Sorting
 } from "./types";
 
 export interface ReportContextType {
   report: Report | null | undefined;
   reportContent: any[] | null | undefined;
-  displayFields: MetaDisplayFields;
-  setDisplayFields: (fields: MetaDisplayFields) => void;
+  displayFields: Field[];
+  setDisplayFields: (fields: Field[]) => void;
   chart: string;
   setChart: (chart: string) => void;
   filters: Filter[];
   setFilters: (filters: Filter[]) => void;
+  sorting: Sorting[];
+  setSorting: (sorting: Sorting[]) => void;
   loading: boolean;
   loadingContent: boolean;
   refetch: () => void;
   refetchContent: () => void;
-  workspaceCollections: WorkspaceCollection[];
-  workspaceListings: WorkspaceListing[];
+  dataSources: ReportDataSource[];
   callbacks: ReportCallbacks;
   config: ReportConfig;
 }
@@ -43,19 +44,20 @@ export const ReportProvider = ({
   reportContent,
   displayFields,
   filters,
+  sorting,
   chart,
   loading = false,
   loadingContent = false,
-  workspaceCollections,
-  workspaceListings,
+  dataSources,
   config,
   callbacks,
   children
 }: ReportProviderProps) => {
-  const [currentDisplayFields, setCurrentDisplayFields] = useState<MetaDisplayFields>(
+  const [currentDisplayFields, setCurrentDisplayFields] = useState<Field[]>(
     displayFields ?? []
   );
   const [currentFilters, setCurrentFilters] = useState<Filter[]>(filters ?? []);
+  const [currentSorting, setCurrentSorting] = useState<Sorting[]>(sorting ?? []);
   const [currentChart, setCurrentChart] = useState<string>(chart ?? "bar");
 
   useEffect(() => {
@@ -65,6 +67,10 @@ export const ReportProvider = ({
   useEffect(() => {
     setCurrentFilters(filters ?? []);
   }, [filters]);
+
+  useEffect(() => {
+    setCurrentSorting(sorting ?? []);
+  }, [sorting]);
 
   useEffect(() => {
     setCurrentChart(chart ?? "bar");
@@ -84,12 +90,13 @@ export const ReportProvider = ({
         setChart: setCurrentChart,
         filters: currentFilters,
         setFilters: setCurrentFilters,
+        sorting: currentSorting,
+        setSorting: setCurrentSorting,
         loading,
         loadingContent,
         refetch,
         refetchContent,
-        workspaceCollections: workspaceCollections ?? [],
-        workspaceListings: workspaceListings ?? [],
+        dataSources: dataSources ?? [],
         callbacks,
         config
       }}

@@ -4,16 +4,16 @@ import { ChevronDownIcon, ChevronUpIcon, TrashIcon } from "@heroicons/react/24/o
 import { useMemo, useState } from "react";
 import { useReport } from "../hooks/useReport";
 import { getAvailableFieldsForReport } from "../utils/reportFiltersUtils";
-import { MetaDisplayFields } from "../types";
+import { Field } from "../types";
 import SettingButton from "./ui/SettingButton";
 
 const getFieldKey = (field: { type: string; field: string }) =>
   `${field.type}_${field.field}`;
 
 const sortAndReindexFields = (
-  fields: MetaDisplayFields,
+  fields: Field[],
   groupedOrder?: string[]
-): MetaDisplayFields => {
+): Field[] => {
   const grouped = fields.filter(field => field.grouping);
   const ungrouped = fields.filter(field => !field.grouping);
 
@@ -61,7 +61,7 @@ export default function ReportAggregation() {
     [availableFields]
   );
 
-  const applyGroupingUpdate = async (nextFields: MetaDisplayFields) => {
+  const applyGroupingUpdate = async (nextFields: Field[]) => {
     const success = await callbacks.onUpdateFields(nextFields);
     if (success) {
       setDisplayFields(nextFields);

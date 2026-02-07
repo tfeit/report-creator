@@ -1,7 +1,7 @@
 import { useReport } from "./useReport";
 
 export const useReportOperations = () => {
-  const { displayFields, setDisplayFields, refetch, callbacks } = useReport();
+  const { displayFields, setDisplayFields, sorting, setSorting, refetch, callbacks } = useReport();
 
   const handleGroupByColumn = async (columnId: string) => {
     const firstUnderscoreIndex = columnId.indexOf("_");
@@ -42,28 +42,26 @@ export const useReportOperations = () => {
   };
 
   const handleSortByColumn = async (columnId: string, sortDirection: "asc" | "desc") => {
-    const firstUnderscoreIndex = columnId.indexOf("_");
-    const field = columnId.substring(0, firstUnderscoreIndex);
-    const type = columnId.substring(firstUnderscoreIndex + 1);
-
-    const updatedDisplayFields = displayFields.map(displayField => {
-      if (displayField.field === field && displayField.type === type) {
-        return {
-          ...displayField,
-          sort: sortDirection
-        };
+    const nextSorting = (() => {
+      const existing = sorting.find(rule => rule.field === columnId);
+      if (existing) {
+        return sorting.map(rule =>
+          rule.field === columnId ? { ...rule, direction: sortDirection } : rule
+        );
       }
-      return displayField;
-    });
+      const nextOrder = sorting.length;
+      return [...sorting, { field: columnId, direction: sortDirection, order: nextOrder }];
+    })().sort((a, b) => a.order - b.order)
+      .map((rule, index) => ({ ...rule, order: index }));
 
     try {
-      const result = await callbacks.onUpdateFields(updatedDisplayFields);
+      const result = await callbacks.onUpdateSorting(nextSorting);
       if (result) {
-        setDisplayFields(updatedDisplayFields);
+        setSorting(nextSorting);
         refetch();
       }
     } catch (error) {
-      console.error("Error updating fields:", error);
+      console.error("Error updating sorting:", error);
     }
   };
 

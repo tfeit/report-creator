@@ -12,7 +12,7 @@ import {
 import { ChevronDownIcon, PlusIcon } from "@heroicons/react/24/outline";
 import DropdownMenu from "./DropdownMenu";
 import Button from "./Button";
-import { MetaDisplayFields, ReportConfig } from "../../types";
+import { Field, ReportConfig } from "../../types";
 import { getFieldLabelFromConfig } from "../../utils/utils";
 import {
   TableBody,
@@ -49,7 +49,7 @@ interface TableNewProps {
   enableTabs?: boolean;
   tabKey?: string;
   setCurrentTab?: (tab: string) => void;
-  displayFields: MetaDisplayFields;
+  displayFields: Field[];
   handleGroupByColumn: (columnId: string) => void;
   config: ReportConfig;
 }
